@@ -25,11 +25,13 @@ project "Runtime"
 		"vendor/SFML-2.6.1/include",
 		"vendor/GLAD/include",
 		"vendor/GLM/include",
+		"vendor/TinyGLTF/include"
 	}
 
 	-- Libraries
 	defines { 
 		"SFML_STATIC",
+		"TINYGLTF_USE_CPP14"
 	}
 
 	libdirs {

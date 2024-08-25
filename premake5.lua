@@ -12,7 +12,8 @@ project "Runtime"
 
 	-- Source
 	files { 
-		"./include/**.h", 
+		"./assets/**.*",
+		"./include/**.h",
 		"./src/**.cpp",
 		"./vendor/GLAD/src/glad.c"
 	}
@@ -46,11 +47,17 @@ project "Runtime"
 		"flac",
 	}
 
-	-- Organize vendor files under a virtual folder
+	-- Organize virtual folders
 	vpaths {
+		["Assets/*"] = { "./assets/**.*" },
 		["Source/*"] = { "./include/**.h", "./include/**.hpp", "./src/**.c", "./src/**.cpp" },
 		["Vendor/*"] = { "./vendor/**.c", "./vendor/**.cpp" },
 	}
+
+	-- Copy assets into bin
+	postbuildcommands {
+        "{COPYDIR} %{wks.location}../assets %{cfg.targetdir}/assets"
+    }
 
 	-- Configurations
 	filter "configurations:Release"

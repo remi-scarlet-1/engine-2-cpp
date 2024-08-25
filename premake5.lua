@@ -1,5 +1,5 @@
 workspace "Engine"
-	configurations { "Debug", "Release" }
+	configurations { "Release", "Debug" }
 	location "generated"
 
 project "Runtime"
@@ -38,11 +38,6 @@ project "Runtime"
 		"winmm",
 		"gdi32",
 		"freetype",
-		"sfml-main",
-		"sfml-system-s",
-		"sfml-window-s",
-		"sfml-audio-s",
-		"sfml-network-s",
 		"vorbis",
 		"vorbisenc",
 		"vorbisfile",
@@ -57,11 +52,27 @@ project "Runtime"
 		["Vendor/*"] = { "./vendor/**.c", "./vendor/**.cpp" },
 	}
 
-	-- configurations
-   filter "configurations:Debug"
-      defines { "DEBUG" }
-      symbols "On"
+	-- Configurations
+	filter "configurations:Release"
+		defines { "NDEBUG" }
+		optimize "On"
 
-   filter "configurations:Release"
-      defines { "NDEBUG" }
-      optimize "On"
+		links {
+			"sfml-main",
+			"sfml-system-s",
+			"sfml-window-s",
+			"sfml-audio-s",
+			"sfml-network-s",
+		}
+
+	filter "configurations:Debug"
+		defines { "DEBUG" }
+		symbols "On"
+
+		links {
+			"sfml-main-d",
+			"sfml-system-s-d",
+			"sfml-window-s-d",
+			"sfml-audio-s-d",
+			"sfml-network-s-d",
+		}

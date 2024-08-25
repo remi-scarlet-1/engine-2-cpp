@@ -21,6 +21,7 @@ project "Runtime"
 		"include",
 		"vendor/SFML-2.6.1/include",
 		"vendor/GLAD/include",
+		"vendor/GLM/include",
 	}
 
 	-- Libraries

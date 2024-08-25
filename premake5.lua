@@ -52,7 +52,8 @@ project "Runtime"
 	-- Organize virtual folders
 	vpaths {
 		["Assets/*"] = { "./assets/**.*" },
-		["Source/*"] = { "./include/**.h", "./include/**.hpp", "./src/**.c", "./src/**.cpp" },
+		["Header/*"] = { "./include/**.h", "./include/**.hpp" },
+		["Source/*"] = { "./src/**.c", "./src/**.cpp" },
 		["Vendor/*"] = { "./vendor/**.c", "./vendor/**.cpp" },
 	}
 

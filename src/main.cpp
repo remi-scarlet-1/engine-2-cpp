@@ -5,35 +5,8 @@
 #include <string>
 
 #include "file.h"
+#include "model.h"
 #include "shader.h"
-
-void createTriangleData(unsigned int* VAO, unsigned int* VBO) {
-    // Define vertices of a triangle
-    float vertices[] = {
-         0.0f,  0.5f, 0.0f,  // Top vertex
-        -0.5f, -0.5f, 0.0f,  // Bottom left vertex
-         0.5f, -0.5f, 0.0f   // Bottom right vertex
-    };
-
-    // Create a Vertex Array Object (VAO)
-    glGenVertexArrays(1, VAO);
-    glBindVertexArray(*VAO);
-
-    // Create a Vertex Buffer Object (VBO)
-    glGenBuffers(1, VBO);
-
-    // Bind the VBO and upload the vertex data
-    glBindBuffer(GL_ARRAY_BUFFER, *VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    // Configure the vertex attributes (position)
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    // Unbind the VBO and VAO
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-}
 
 int main() {
     // Create a window
@@ -50,9 +23,9 @@ int main() {
     std::cout << "OpenGL Version: " << glGetString(GL_VERSION) << std::endl;
 
     // Create triangle data
-    GLuint VAO;
-    GLuint VBO;
-    createTriangleData(&VAO, &VBO);
+    std::string cubePath = file::getExecutablePath().parent_path().append("assets/cube/cube.gltf").string();
+    const char* cubePathC = cubePath.c_str();
+    GLuint VAO = model::LoadMeshVAO(cubePathC);
 
     // Create and compile the vertex shader
     GLuint vertexShader = shader::compileShader(GL_VERTEX_SHADER, file::readFileToString("assets/default.vert"));
@@ -87,7 +60,6 @@ int main() {
 
     // Cleanup
     glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
     glDeleteProgram(shaderProgram);
 
     return 0;

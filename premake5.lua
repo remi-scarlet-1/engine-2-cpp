@@ -10,50 +10,52 @@ project "Runtime"
 	objdir "bin-int/%{cfg.buildcfg}"
 	targetdir "bin/%{cfg.buildcfg}"
 
-	-- source
+	-- Source
 	files { 
 		"./include/**.h", 
-		"./src/**.cpp"
+		"./src/**.cpp",
+		"./vendor/GLAD/src/glad.c"
 	}
 
-	-- vendors
 	includedirs {
 		"include",
-		"vendor/SFML-2.6.1/include"
-		-- "vendor/some_library/include"
-		-- "vendor/another_library/include"
+		"vendor/SFML-2.6.1/include",
+		"vendor/GLAD/include",
 	}
-	
+
+	-- Libraries
+	defines { 
+		"SFML_STATIC",
+	}
+
 	libdirs {
-		"vendor/SFML-2.6.1/lib"
-		-- "vendor/some_library/lib"
-		-- "vendor/another_library/lib"
+		"vendor/SFML-2.6.1/lib",
 	}
-	
+
 	links {
+		"opengl32",
+		"winmm",
+		"gdi32",
+		"freetype",
 		"sfml-main",
 		"sfml-system-s",
 		"sfml-window-s",
 		"sfml-audio-s",
 		"sfml-network-s",
-		"opengl32",
-		"winmm",
-		"gdi32",
-		"freetype",
 		"vorbis",
 		"vorbisenc",
 		"vorbisfile",
 		"openal32",
 		"ogg",
 		"flac",
-		-- "some_library"
-		-- "another_library"
 	}
 
-	defines { 
-		"SFML_STATIC" 
+	-- Organize vendor files under a virtual folder
+	vpaths {
+		["Source/*"] = { "./include/**.h", "./include/**.hpp", "./src/**.c", "./src/**.cpp" },
+		["Vendor/*"] = { "./vendor/**.c", "./vendor/**.cpp" },
 	}
-	
+
 	-- configurations
    filter "configurations:Debug"
       defines { "DEBUG" }

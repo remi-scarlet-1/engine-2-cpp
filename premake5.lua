@@ -1,14 +1,16 @@
 workspace "Engine"
 	configurations { "Release", "Debug" }
+    platforms { "x64" }
 	location "generated"
 
 project "Runtime"
 	kind "ConsoleApp"
 	language "C++"
+	cppdialect "C++20"
 	architecture "x64"
 
-	objdir "bin-int/%{cfg.buildcfg}"
 	targetdir "bin/%{cfg.buildcfg}"
+	objdir "bin-int/%{cfg.buildcfg}"
 
 	-- Source
 	files { 

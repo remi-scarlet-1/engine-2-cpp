@@ -4,100 +4,126 @@
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <TinyGLTF/tiny_gltf.h>
-
-#include <glad/glad.h>
+#include <string>
 #include <iostream>
 
-using namespace tinygltf;
+/// <summary>
+/// Copies a TinyGLTF buffer into the provided array. Make sure size matches!
+/// </summary>
+template<typename T>
+void copyTinyGLTFBuffer(const tinygltf::Accessor& accessor, const tinygltf::Buffer& buffer, const tinygltf::BufferView& bufferView, T* targetArray) {
+    const unsigned char* dataPtr = buffer.data.data() + bufferView.byteOffset + accessor.byteOffset;
+    memcpy(targetArray, dataPtr, accessor.count * sizeof(T));
+}
 
-unsigned int model::LoadMeshVAO(const char* path)
+model::Primitive* loadTinyGLTFPrimitive(const tinygltf::Model& tinyModel, const tinygltf::Primitive& tinyPrimitive)
 {
-    // Load the GLTF model
-    tinygltf::TinyGLTF loader;
-    tinygltf::Model model;
-    std::string err, warn;
+    // Extract sizes of various attributes
+    std::size_t numIndices = tinyModel.accessors[tinyPrimitive.indices].count;
+    std::size_t numPositions = tinyPrimitive.attributes.count("POSITION") > 0 ? tinyModel.accessors[tinyPrimitive.attributes.at("POSITION")].count : 0;
+    std::size_t numNormals = tinyPrimitive.attributes.count("NORMAL") > 0 ? tinyModel.accessors[tinyPrimitive.attributes.at("NORMAL")].count : 0;
+    std::size_t numUVs = tinyPrimitive.attributes.count("TEXCOORD_0") > 0 ? tinyModel.accessors[tinyPrimitive.attributes.at("TEXCOORD_0")].count : 0;
+    
+    // Create raw arrays to store data
+    unsigned int* bIndices = new unsigned int[numIndices];
+    glm::vec3* bPositions = numPositions > 0 ? new glm::vec3[numPositions] : nullptr;
+    glm::vec3* bNormals = numNormals > 0 ? new glm::vec3[numNormals] : nullptr;
+    glm::vec2* bUVs = numUVs > 0 ? new glm::vec2[numUVs] : nullptr;
 
-    bool success = loader.LoadASCIIFromFile(&model, &err, &warn, path);  // Or LoadBinaryFromFile for GLB
-    if (!warn.empty()) {
-        std::cout << "Warning: " << warn << std::endl;
+    // Indices
+    const tinygltf::Accessor& indexAccessor = tinyModel.accessors[tinyPrimitive.indices];
+    const tinygltf::BufferView& indexBufferView = tinyModel.bufferViews[indexAccessor.bufferView];
+    const tinygltf::Buffer& indexBuffer = tinyModel.buffers[indexBufferView.buffer];
+    const unsigned char* indexDataPtr = indexBuffer.data.data() + indexBufferView.byteOffset + indexAccessor.byteOffset;
+
+    switch (indexAccessor.componentType) {
+        case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT: // In case of ushort (16-bit) format
+            for (std::size_t i = 0; i < numIndices; ++i)
+                bIndices[i] = reinterpret_cast<const unsigned short*>(indexDataPtr)[i];
+            break;
+
+        case TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT: // In case of uint (32-bit) format
+            for (std::size_t i = 0; i < numIndices; ++i)
+                bIndices[i] = reinterpret_cast<const unsigned int*>(indexDataPtr)[i];
+            break;
+
+        default: // Fail if neither ushort (16-bit) nor uint (32-bit) format matches
+            std::cerr << "Unsupported index component type" << std::endl;
+            delete[] bIndices;
+            if (bPositions) delete[] bPositions;
+            if (bNormals) delete[] bNormals;
+            if (bUVs) delete[] bUVs;
+            return nullptr;
     }
-    if (!err.empty()) {
-        std::cerr << "Error: " << err << std::endl;
+
+    // Positions
+    if (numPositions > 0) {
+        const tinygltf::Accessor& positionAccessor = tinyModel.accessors[tinyPrimitive.attributes.at("POSITION")];
+        const tinygltf::BufferView& positionBufferView = tinyModel.bufferViews[positionAccessor.bufferView];
+        const tinygltf::Buffer& positionBuffer = tinyModel.buffers[positionBufferView.buffer];
+        copyTinyGLTFBuffer(positionAccessor, positionBuffer, positionBufferView, bPositions);
     }
+
+    // Normals
+    if (numNormals > 0) {
+        const tinygltf::Accessor& normalAccessor = tinyModel.accessors[tinyPrimitive.attributes.at("NORMAL")];
+        const tinygltf::BufferView& normalBufferView = tinyModel.bufferViews[normalAccessor.bufferView];
+        const tinygltf::Buffer& normalBuffer = tinyModel.buffers[normalBufferView.buffer];
+        copyTinyGLTFBuffer(normalAccessor, normalBuffer, normalBufferView, bNormals);
+    }
+
+    // UVs
+    if (numUVs > 0) {
+        const tinygltf::Accessor& uvAccessor = tinyModel.accessors[tinyPrimitive.attributes.at("TEXCOORD_0")];
+        const tinygltf::BufferView& uvBufferView = tinyModel.bufferViews[uvAccessor.bufferView];
+        const tinygltf::Buffer& uvBuffer = tinyModel.buffers[uvBufferView.buffer];
+        copyTinyGLTFBuffer(uvAccessor, uvBuffer, uvBufferView, bUVs);
+    }
+
+    // Create and return a new Primitive object
+    return new model::Primitive(
+        numIndices, 
+        numPositions, 
+        numNormals, 
+        numUVs, 
+        bIndices, 
+        bPositions, 
+        bNormals, 
+        bUVs
+    );
+}
+
+model::Model* model::loadModelGLTF(const std::filesystem::path& path)
+{
+    model::Model* model = new Model();
+
+    // TinyGLTF
+    tinygltf::Model tinyModel;
+    tinygltf::TinyGLTF tinyLoader;
+    std::string err;
+    std::string warn;
+
+    // Load GLTF file
+    bool success = tinyLoader.LoadASCIIFromFile(&tinyModel, &err, &warn, path.string());
     if (!success) {
-        std::cerr << "Failed to load GLTF/GLB file" << std::endl;
-        return 0;
+        std::cerr << "Failed to load GLTF file: " << err << std::endl;
+        return model;
     }
 
-    // Assuming the first mesh and primitive for simplicity
-    const tinygltf::Mesh& mesh = model.meshes[0];
-    const tinygltf::Primitive& primitive = mesh.primitives[0];
+    // Iterate through meshes
+    for (const tinygltf::Mesh& tinyMesh : tinyModel.meshes) {
+        model::Mesh* mesh = new Mesh();
 
-    // Prepare OpenGL buffers
-    GLuint VAO, VBO_position, VBO_normal, VBO_uv, EBO;
+        // Iterate through primitives
+        for (const tinygltf::Primitive& tinyPrimitive : tinyMesh.primitives) {
+            model::Primitive* primitive = loadTinyGLTFPrimitive(tinyModel, tinyPrimitive);
 
-    glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
+            if (primitive)
+                mesh->primitives.push_back(primitive);
+        }
 
-    // Extract position, normal, and UV attributes if available
-    if (primitive.attributes.find("POSITION") != primitive.attributes.end()) {
-        const tinygltf::Accessor& accessor = model.accessors[primitive.attributes.find("POSITION")->second];
-        const tinygltf::BufferView& bufferView = model.bufferViews[accessor.bufferView];
-        const tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
-
-        // Create VBO for positions
-        glGenBuffers(1, &VBO_position);
-        glBindBuffer(GL_ARRAY_BUFFER, VBO_position);
-        glBufferData(GL_ARRAY_BUFFER, bufferView.byteLength, &buffer.data[bufferView.byteOffset], GL_STATIC_DRAW);
-
-        // Set up vertex attribute pointer
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0); // Assuming vec3 for positions
-        glEnableVertexAttribArray(0);
+        model->meshes.push_back(mesh);
     }
 
-    if (primitive.attributes.find("NORMAL") != primitive.attributes.end()) {
-        const tinygltf::Accessor& accessor = model.accessors[primitive.attributes.find("NORMAL")->second];
-        const tinygltf::BufferView& bufferView = model.bufferViews[accessor.bufferView];
-        const tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
-
-        // Create VBO for normals
-        glGenBuffers(1, &VBO_normal);
-        glBindBuffer(GL_ARRAY_BUFFER, VBO_normal);
-        glBufferData(GL_ARRAY_BUFFER, bufferView.byteLength, &buffer.data[bufferView.byteOffset], GL_STATIC_DRAW);
-
-        // Set up vertex attribute pointer
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0); // Assuming vec3 for normals
-        glEnableVertexAttribArray(1);
-    }
-
-    if (primitive.attributes.find("TEXCOORD_0") != primitive.attributes.end()) {
-        const tinygltf::Accessor& accessor = model.accessors[primitive.attributes.find("TEXCOORD_0")->second];
-        const tinygltf::BufferView& bufferView = model.bufferViews[accessor.bufferView];
-        const tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
-
-        // Create VBO for UVs
-        glGenBuffers(1, &VBO_uv);
-        glBindBuffer(GL_ARRAY_BUFFER, VBO_uv);
-        glBufferData(GL_ARRAY_BUFFER, bufferView.byteLength, &buffer.data[bufferView.byteOffset], GL_STATIC_DRAW);
-
-        // Set up vertex attribute pointer
-        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0); // Assuming vec2 for UVs
-        glEnableVertexAttribArray(2);
-    }
-
-    // Extract and upload index data if present
-    if (primitive.indices >= 0) {
-        const tinygltf::Accessor& accessor = model.accessors[primitive.indices];
-        const tinygltf::BufferView& bufferView = model.bufferViews[accessor.bufferView];
-        const tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
-
-        glGenBuffers(1, &EBO);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, bufferView.byteLength, &buffer.data[bufferView.byteOffset], GL_STATIC_DRAW);
-    }
-
-    // Unbind VAO
-    glBindVertexArray(0);
-
-    return VAO;
+    return model;
 }

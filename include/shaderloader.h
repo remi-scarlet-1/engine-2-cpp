@@ -3,7 +3,7 @@
 #include <iostream>
 #include <glad/glad.h>
 
-namespace shader {
+namespace shaderloader {
 	GLuint compileShader(GLuint glShaderType, std::string shaderCode);
 	GLuint linkProgram(GLuint vertexShader, GLuint fragmentShader);
 }

@@ -1,4 +1,4 @@
-#include "model.h"
+#include "modelloader.h"
 
 #define TINYGLTF_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
@@ -10,7 +10,7 @@
 
 using namespace tinygltf;
 
-unsigned int model::LoadMeshVAO(const char* path)
+unsigned int modelloader::LoadMeshVAO(const char* path)
 {
     // Load the GLTF model
     tinygltf::TinyGLTF loader;

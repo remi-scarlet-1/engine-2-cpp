@@ -1,10 +1,10 @@
-#include "shader.h"
+#include "shaderloader.h"
 
 // NOT THREAD SAFE, defining translation wide buffer and status int to not reallocate every time
 static int success;
 static char infoLog[512];
 
-GLuint shader::compileShader(GLuint glShaderType, std::string shaderCode) {
+GLuint shaderloader::compileShader(GLuint glShaderType, std::string shaderCode) {
     // Convert shader code to c style string
     const char* shaderCodeC = shaderCode.c_str();
 
@@ -23,7 +23,7 @@ GLuint shader::compileShader(GLuint glShaderType, std::string shaderCode) {
     return shader;
 }
 
-GLuint shader::linkProgram(GLuint vertexShader, GLuint fragmentShader) {
+GLuint shaderloader::linkProgram(GLuint vertexShader, GLuint fragmentShader) {
     // Create program & try link
     GLuint program = glCreateProgram();
     glAttachShader(program, vertexShader);

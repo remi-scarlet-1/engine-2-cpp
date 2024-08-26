@@ -1,5 +1,5 @@
 #pragma once
 
-namespace model {
+namespace modelloader {
 	unsigned int LoadMeshVAO(const char* path);
 }

@@ -11,7 +11,7 @@
 
 void testGLTFModelLoading() {
     // Create testModel path
-    std::filesystem::path testModelPath = file::getExecutablePath().parent_path().append("assets/sponza/NewSponza_Main_glTF_003.gltf");
+    std::filesystem::path testModelPath = file::getExecutablePath().parent_path().append("assets/sponza/NewSponza_Main_glTF_003_Fixed.gltf");
     
     // Keep time & load testModel
     auto start = std::chrono::high_resolution_clock::now();

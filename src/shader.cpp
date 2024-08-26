@@ -1,30 +1,40 @@
 #include "shader.h"
 
-// NOT THREAD SAFE, defining translation wide buffer and status int to not reallocate every time
+#include <glad/glad.h>
+
+const char* getShaderTypeName(GLenum shaderType) {
+    switch (shaderType) {
+        case GL_VERTEX_SHADER:          return "GL_VERTEX_SHADER";
+        case GL_FRAGMENT_SHADER:        return "GL_FRAGMENT_SHADER";
+        case GL_GEOMETRY_SHADER:        return "GL_GEOMETRY_SHADER";
+        case GL_COMPUTE_SHADER:         return "GL_COMPUTE_SHADER";
+        case GL_TESS_CONTROL_SHADER:    return "GL_TESS_CONTROL_SHADER";
+        case GL_TESS_EVALUATION_SHADER: return "GL_TESS_EVALUATION_SHADER";
+        default:                        return "UNKNOWN_SHADER_TYPE";
+    }
+}
+
+// NOT THREAD SAFE, translation unit wide success & infoLog buffers
 static int success;
 static char infoLog[512];
 
-GLuint shader::compileShader(GLuint glShaderType, std::string shaderCode) {
-    // Convert shader code to c style string
-    const char* shaderCodeC = shaderCode.c_str();
-
-    // Create shader & try compile
-    GLuint shader = glCreateShader(glShaderType);
-    glShaderSource(shader, 1, &shaderCodeC, NULL);
+unsigned int shader::compileShader(unsigned int shaderType, std::string shaderSource) {
+    GLuint shader = glCreateShader(shaderType);
+    const char* source = shaderSource.c_str();
+    glShaderSource(shader, 1, &source, NULL);
     glCompileShader(shader);
 
     // Check for compilation errors
     glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
     if (!success) {
         glGetShaderInfoLog(shader, 512, NULL, infoLog);
-        std::cerr << "ERROR::SHADER::UNKNOWN::COMPILATION_FAILED\n" << infoLog << std::endl; // TODO: fix error message
+        std::cerr << "ERROR::SHADER::" << getShaderTypeName(shaderType) << "::COMPILATION_FAILED\n" << infoLog << std::endl;
     }
 
     return shader;
 }
 
-GLuint shader::linkProgram(GLuint vertexShader, GLuint fragmentShader) {
-    // Create program & try link
+unsigned int shader::linkProgram(unsigned int vertexShader, unsigned int fragmentShader) {
     GLuint program = glCreateProgram();
     glAttachShader(program, vertexShader);
     glAttachShader(program, fragmentShader);

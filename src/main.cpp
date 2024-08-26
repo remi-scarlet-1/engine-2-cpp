@@ -4,13 +4,13 @@
 #include <iostream>
 #include <string>
 
-#include "files.h"
-#include "modelloader.h"
-#include "shaderloader.h"
+#include "file.h"
+#include "model.h"
+#include "shader.h"
 
 int main() {
     // Create a window
-    sf::Window window(sf::VideoMode(1280, 720), "Engine Test Window", sf::Style::Default, sf::ContextSettings(24, 8, 4, 4, 6));
+    sf::Window window(sf::VideoMode(1920, 1080), "Engine Test Window", sf::Style::Default, sf::ContextSettings(24, 8, 4, 4, 6));
 
     // Load OpenGL functions
     if (!gladLoadGLLoader((GLADloadproc)sf::Context::getFunction)) {
@@ -25,13 +25,13 @@ int main() {
     // Create triangle data
     std::string cubePath = file::getExecutablePath().parent_path().append("assets/cube/cube.gltf").string();
     const char* cubePathC = cubePath.c_str();
-    GLuint VAO = modelloader::LoadMeshVAO(cubePathC);
+    GLuint VAO = model::LoadMeshVAO(cubePathC);
 
     // Create and compile the vertex shader
-    GLuint vertexShader = shaderloader::compileShader(GL_VERTEX_SHADER, file::readFileToString("assets/default.vert"));
-    GLuint fragmentShader = shaderloader::compileShader(GL_FRAGMENT_SHADER, file::readFileToString("assets/default.frag"));
+    GLuint vertexShader = shader::compileShader(GL_VERTEX_SHADER, file::readFileToString("assets/default.vert"));
+    GLuint fragmentShader = shader::compileShader(GL_FRAGMENT_SHADER, file::readFileToString("assets/default.frag"));
 
-    GLuint shaderProgram = shaderloader::linkProgram(vertexShader, fragmentShader);
+    GLuint shaderProgram = shader::linkProgram(vertexShader, fragmentShader);
 
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);

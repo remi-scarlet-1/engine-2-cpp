@@ -98,8 +98,16 @@ namespace model {
     };
 
 	/// <summary>
-	/// Load's a GLTF model from disk.
+	/// Load's a GLB model from disk. <para></para>
+    /// (Quantized models are NOT supported)
 	/// </summary>
 	/// <returns>Raw Model pointer.</returns>
-	Model* loadModelGLTF(const std::filesystem::path &path);
+	Model* loadGLBModel(const std::filesystem::path &path);
+
+    /// <summary>
+    /// Load's a GLTF model from disk. <para></para>
+    /// (Quantized models are NOT supported)
+    /// </summary>
+    /// <returns>Raw Model pointer.</returns>
+	Model* loadGLTFModel(const std::filesystem::path &path);
 }

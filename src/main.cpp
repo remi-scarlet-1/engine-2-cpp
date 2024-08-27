@@ -11,11 +11,11 @@
 
 void testGLTFModelLoading() {
     // Create testModel path
-    std::filesystem::path testModelPath = file::getExecutablePath().parent_path().append("assets/sponza/NewSponza_Main_glTF_003_Fixed2.gltf");
+    std::filesystem::path testModelPath = file::getExecutablePath().parent_path().append("assets/sponza/sponza_texcompress_75jpeg.glb");
     
     // Keep time & load testModel
     auto start = std::chrono::high_resolution_clock::now();
-    model::Model* testModel = model::loadModelGLTF(testModelPath);
+    model::Model* testModel = model::loadGLBModel(testModelPath);
     auto end = std::chrono::high_resolution_clock::now();
 
     // Print testModel mesh & sub-meshes data
@@ -67,8 +67,6 @@ int main() {
     // Test GLTF loading
     testGLTFModelLoading();
     return 0;
-
-
 
     // Create a window
     sf::Window window(sf::VideoMode(1920, 1080), "Engine Test Window", sf::Style::Default, sf::ContextSettings(24, 8, 4, 4, 6));

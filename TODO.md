@@ -1,0 +1,3 @@
+- [ ] improve GLTF/GLB model loading ram usage
+- [ ] improve GLTF/GLB model loading speed
+- [ ] support GLTF/GLB quantization issues?

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <vector>
 #include <cstddef>
 #include <filesystem>
 #include <glm/vec2.hpp>
@@ -67,12 +66,16 @@ namespace model {
     /// Represents a mesh of a model, with all its primitives.
     /// </summary>
     struct Mesh {
-        std::vector<const Primitive*> primitives;
+        const std::size_t numPrimitives;
+        const Primitive* const* const primitives;
 
-        Mesh() = default;
+        Mesh(std::size_t numPrimitives, const Primitive** primitives)
+            : numPrimitives(numPrimitives), primitives(primitives) {}
+
         ~Mesh() {
-            for (const Primitive* primitive : primitives)
-                delete primitive;
+            for (std::size_t i = 0; i < numPrimitives; ++i)
+                delete primitives[i];
+            delete[] primitives;
         }
 
         // Delete copy and move constructors/assignments to prevent copying
@@ -84,12 +87,16 @@ namespace model {
     /// Represents a model.
     /// </summary>
     struct Model {
-        std::vector<const Mesh*> meshes;
+        const std::size_t numMeshes;
+        const Mesh* const* const meshes;
 
-        Model() = default;
+        Model(std::size_t numMeshes, const Mesh** meshes)
+            : numMeshes(numMeshes), meshes(meshes) {}
+
         ~Model() {
-            for (const Mesh* mesh : meshes)
-                delete mesh;
+            for (std::size_t i = 0; i < numMeshes; ++i)
+                delete meshes[i];
+            delete[] meshes;
         }
 
         // Delete copy and move constructors/assignments to prevent copying
@@ -98,16 +105,8 @@ namespace model {
     };
 
 	/// <summary>
-	/// Load's a GLB model from disk. <para></para>
-    /// (Quantized models are NOT supported)
+	/// Load's a GLTF/GLB model from file.
 	/// </summary>
 	/// <returns>Raw Model pointer.</returns>
-	Model* loadGLBModel(const std::filesystem::path &path);
-
-    /// <summary>
-    /// Load's a GLTF model from disk. <para></para>
-    /// (Quantized models are NOT supported)
-    /// </summary>
-    /// <returns>Raw Model pointer.</returns>
-	Model* loadGLTFModel(const std::filesystem::path &path);
+	Model* loadModelGLTF(const std::filesystem::path &path);
 }

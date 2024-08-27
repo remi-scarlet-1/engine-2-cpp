@@ -52,27 +52,27 @@ std::string readFileToString(const char* relativePath) {
     return buffer.str();
 }
 
-void testGLTFModelLoading() {
+model::Model* testGLTFModelLoading() {
     // Create testModel path
     std::filesystem::path testModelPath = getExecutablePath().parent_path().append("assets/cube/Cube.gltf");
     
     // Keep time & load testModel
     auto start = std::chrono::high_resolution_clock::now();
-    model::Model* testModel = model::loadGLTFModel(testModelPath);
+    model::Model* testModel = model::loadModelGLTF(testModelPath);
     auto end = std::chrono::high_resolution_clock::now();
 
     // Print testModel mesh & sub-meshes data
     std::size_t totalMeshes = 0;
     std::size_t totalPrimitives = 0;
 
-    for (std::size_t meshIdx = 0; meshIdx < testModel->meshes.size(); ++meshIdx) {
+    for (std::size_t meshIdx = 0; meshIdx < testModel->numMeshes; ++meshIdx) {
         const model::Mesh* mesh = testModel->meshes[meshIdx];
         if (!mesh) {
             std::cerr << "Mesh at index " << meshIdx << " is null." << std::endl;
             continue;
         }
 
-        std::size_t numPrimitives = mesh->primitives.size();
+        std::size_t numPrimitives = mesh->numPrimitives;
         totalMeshes++;
         totalPrimitives += numPrimitives;
 
@@ -103,11 +103,13 @@ void testGLTFModelLoading() {
     std::chrono::duration<double> duration = end - start;
     std::cout << "Time taken: " << duration.count() << " seconds" << std::endl;
 
-    delete testModel;
+    return testModel;
 }
 #pragma endregion
 
 int main() {
+    model::Model* model = testGLTFModelLoading();
+
     // Create a window
     sf::Window window(sf::VideoMode(1920, 1080), "Engine Test Window", sf::Style::Default, sf::ContextSettings(24, 8, 4, 4, 6));
 
@@ -150,7 +152,8 @@ int main() {
     }
 
     // Cleanup
-    glDeleteProgram(shaderProgram);;
+    glDeleteProgram(shaderProgram);
+    delete model;
 
     return 0;
 }

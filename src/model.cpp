@@ -1,23 +1,25 @@
 #include "model.h"
 
 #define TINYGLTF_IMPLEMENTATION
-#define TINYGLTF_NO_EXTERNAL_IMAGE
-#define STB_IMAGE_IMPLEMENTATION
-#define STB_IMAGE_WRITE_IMPLEMENTATION
+#define TINYGLTF_NO_STB_IMAGE // Replaced with mock load
+#define TINYGLTF_NO_STB_IMAGE_WRITE // Replaced with mock read
 #include <TinyGLTF/tiny_gltf.h>
 #include <string>
 #include <iostream>
+
+bool MockLoadImageData(tinygltf::Image* image, const int image_idx, std::string* err, std::string* warn, int req_width, int req_height, const unsigned char* bytes, int size, void* user_data) { return true;}
+bool MockWriteImageData(const std::string* basepath, const std::string* filename, const tinygltf::Image* image, bool embedImages, const tinygltf::FsCallbacks* fs_cb, const tinygltf::URICallbacks* uri_cb, std::string* out_uri, void* user_pointer) { return true;}
 
 /// <summary>
 /// Copies a TinyGLTF buffer into the provided array. Make sure size matches!
 /// </summary>
 template<typename T>
-void copyBufferTinyGLTF(const tinygltf::Accessor& accessor, const tinygltf::Buffer& buffer, const tinygltf::BufferView& bufferView, T* targetArray) {
+void copyVertexBuffer(const tinygltf::Accessor& accessor, const tinygltf::Buffer& buffer, const tinygltf::BufferView& bufferView, T* targetArray) {
     const unsigned char* dataPtr = buffer.data.data() + bufferView.byteOffset + accessor.byteOffset;
     memcpy(targetArray, dataPtr, accessor.count * sizeof(T));
 }
 
-model::Primitive* loadGLTFPrimitive(const tinygltf::Model& tinyModel, const tinygltf::Primitive& tinyPrimitive)
+model::Primitive* loadPrimitive(const tinygltf::Model& tinyModel, const tinygltf::Primitive& tinyPrimitive)
 {
     // Extract sizes of various attributes
     std::size_t numIndices = tinyModel.accessors[tinyPrimitive.indices].count;
@@ -62,7 +64,7 @@ model::Primitive* loadGLTFPrimitive(const tinygltf::Model& tinyModel, const tiny
         const tinygltf::Accessor& positionAccessor = tinyModel.accessors[tinyPrimitive.attributes.at("POSITION")];
         const tinygltf::BufferView& positionBufferView = tinyModel.bufferViews[positionAccessor.bufferView];
         const tinygltf::Buffer& positionBuffer = tinyModel.buffers[positionBufferView.buffer];
-        copyBufferTinyGLTF(positionAccessor, positionBuffer, positionBufferView, bPositions);
+        copyVertexBuffer(positionAccessor, positionBuffer, positionBufferView, bPositions);
     }
 
     // Normals
@@ -70,7 +72,7 @@ model::Primitive* loadGLTFPrimitive(const tinygltf::Model& tinyModel, const tiny
         const tinygltf::Accessor& normalAccessor = tinyModel.accessors[tinyPrimitive.attributes.at("NORMAL")];
         const tinygltf::BufferView& normalBufferView = tinyModel.bufferViews[normalAccessor.bufferView];
         const tinygltf::Buffer& normalBuffer = tinyModel.buffers[normalBufferView.buffer];
-        copyBufferTinyGLTF(normalAccessor, normalBuffer, normalBufferView, bNormals);
+        copyVertexBuffer(normalAccessor, normalBuffer, normalBufferView, bNormals);
     }
 
     // UVs
@@ -78,7 +80,7 @@ model::Primitive* loadGLTFPrimitive(const tinygltf::Model& tinyModel, const tiny
         const tinygltf::Accessor& uvAccessor = tinyModel.accessors[tinyPrimitive.attributes.at("TEXCOORD_0")];
         const tinygltf::BufferView& uvBufferView = tinyModel.bufferViews[uvAccessor.bufferView];
         const tinygltf::Buffer& uvBuffer = tinyModel.buffers[uvBufferView.buffer];
-        copyBufferTinyGLTF(uvAccessor, uvBuffer, uvBufferView, bUVs);
+        copyVertexBuffer(uvAccessor, uvBuffer, uvBufferView, bUVs);
     }
 
     // Create and return a new Primitive object
@@ -94,62 +96,47 @@ model::Primitive* loadGLTFPrimitive(const tinygltf::Model& tinyModel, const tiny
     );
 }
 
-model::Model* loadTinyGLTFModel(model::Model* model, const tinygltf::Model &tinyModel, const tinygltf::TinyGLTF &tinyLoader)
+model::Model* model::loadModelGLTF(const std::filesystem::path& path)
 {
-    // Iterate through meshes
-    for (const tinygltf::Mesh& tinyMesh : tinyModel.meshes) {
-        model::Mesh* mesh = new model::Mesh();
+    // Setup
+    tinygltf::Model tinyModel;
+    tinygltf::TinyGLTF tinyLoader;
+    tinyLoader.SetImageLoader(MockLoadImageData, nullptr);
+    tinyLoader.SetImageWriter(MockWriteImageData, nullptr);
 
-        // Iterate through primitives
-        for (const tinygltf::Primitive& tinyPrimitive : tinyMesh.primitives) {
-            model::Primitive* primitive = loadGLTFPrimitive(tinyModel, tinyPrimitive);
+    // Attempt load
+    std::string extension = path.extension().string();
+    bool success = false;
+    std::string err;
+    std::string warn;
+    
+    if (extension == ".gltf") success = tinyLoader.LoadASCIIFromFile(&tinyModel, &err, &warn, path.string());
+    if (extension == ".glb") success = tinyLoader.LoadBinaryFromFile(&tinyModel, &err, &warn, path.string());
 
+    if (!success) {
+        std::cerr << "Failed to load GLTF file: " << err << std::endl;
+        return nullptr;
+    }
+
+    // Collect meshes
+    const std::size_t numMeshes = tinyModel.meshes.size();
+    const Mesh** meshes = new const Mesh*[numMeshes];
+
+    for (size_t i = 0; i < numMeshes; i++) {
+        // Collect primitives
+        const std::size_t numPrimitives = tinyModel.meshes[i].primitives.size();
+        const Primitive** primitives = new const Primitive*[numPrimitives];
+
+        for (size_t j = 0; j < numPrimitives; j++)
+        {
+            const model::Primitive* primitive = loadPrimitive(tinyModel, tinyModel.meshes[i].primitives[j]);
             if (primitive)
-                mesh->primitives.push_back(primitive);
+                primitives[j] = primitive; // Save constructed primitive
         }
 
-        model->meshes.push_back(mesh);
+        // Save constructed mesh
+        meshes[i] = new Mesh(numPrimitives, primitives);
     }
 
-    return model;
-}
-
-model::Model* model::loadGLBModel(const std::filesystem::path& path) 
-{
-    model::Model* model = new Model();
-    tinygltf::Model tinyModel;
-    tinygltf::TinyGLTF tinyLoader;
-    std::string err;
-    std::string warn;
-
-    // Load GLTF file
-    bool success = tinyLoader.LoadBinaryFromFile(&tinyModel, &err, &warn, path.string());
-    if (!success) {
-        std::cerr << "Failed to load GLTF file: " << err << std::endl;
-        return model;
-    }
-
-    // Load TinyGLTF
-    model = loadTinyGLTFModel(model, tinyModel, tinyLoader);
-    return model;
-}
-
-model::Model* model::loadGLTFModel(const std::filesystem::path& path)
-{
-    model::Model* model = new Model();
-    tinygltf::Model tinyModel;
-    tinygltf::TinyGLTF tinyLoader;
-    std::string err;
-    std::string warn;
-
-    // Load GLTF file
-    bool success = tinyLoader.LoadASCIIFromFile(&tinyModel, &err, &warn, path.string());
-    if (!success) {
-        std::cerr << "Failed to load GLTF file: " << err << std::endl;
-        return model;
-    }
-
-    // Load TinyGLTF
-    model = loadTinyGLTFModel(model, tinyModel, tinyLoader);
-    return model;
+    return new Model(numMeshes, meshes);
 }

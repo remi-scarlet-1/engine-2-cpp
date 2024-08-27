@@ -1,3 +1,5 @@
+- [ ] implement rendering of a single mesh primitive
+- [ ] implement rendering textures, shaders, materials per mesh primitive
 - [ ] improve GLTF/GLB model loading ram usage
 - [ ] improve GLTF/GLB model loading speed
 - [ ] support GLTF/GLB quantization issues?

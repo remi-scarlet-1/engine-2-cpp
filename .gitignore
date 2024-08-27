@@ -1,8 +1,6 @@
 /.vs/
 
 /assets/sponza/*
-!/assets/sponza/NewSponza_Main_glTF_003_Fixed2.bin
-!/assets/sponza/NewSponza_Main_glTF_003_Fixed2.gltf
 
 /bin/
 /bin-int/

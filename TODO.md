@@ -1,4 +1,5 @@
-- [ ] implement rendering of a single mesh primitive
+- [ ] refactor model
+- [ ] implement rendering of a single mesh primitive & camera
 - [ ] implement rendering textures, shaders, materials per mesh primitive
 - [ ] improve GLTF/GLB model loading ram usage
 - [ ] improve GLTF/GLB model loading speed

@@ -11,11 +11,11 @@
 
 void testGLTFModelLoading() {
     // Create testModel path
-    std::filesystem::path testModelPath = file::getExecutablePath().parent_path().append("assets/sponza/sponza_texcompress_75jpeg.glb");
+    std::filesystem::path testModelPath = file::getExecutablePath().parent_path().append("assets/cube/Cube.gltf");
     
     // Keep time & load testModel
     auto start = std::chrono::high_resolution_clock::now();
-    model::Model* testModel = model::loadGLBModel(testModelPath);
+    model::Model* testModel = model::loadGLTFModel(testModelPath);
     auto end = std::chrono::high_resolution_clock::now();
 
     // Print testModel mesh & sub-meshes data

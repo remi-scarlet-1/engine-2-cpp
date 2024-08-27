@@ -4,14 +4,57 @@
 #include <iostream>
 #include <chrono>
 #include <string>
+#include <fstream>
+#include <filesystem>
+#include <windows.h>
 
-#include "file.h"
 #include "model.h"
 #include "shader.h"
 
+#pragma region Helper Functions
+std::filesystem::path getExecutablePath() {
+    // Try get exePath (using Windows OS function)
+    char buffer[MAX_PATH];
+    DWORD result = GetModuleFileNameA(NULL, buffer, sizeof(buffer));
+
+    // Check if getting exePath succeded
+    if (result == 0) {
+        std::cerr << "Error getting executable path: " << GetLastError() << std::endl;
+        return std::filesystem::path("");
+    }
+
+    // Return path
+    return std::filesystem::path(buffer);
+}
+
+std::string readFileToString(const char* relativePath) {
+    // Get exePath
+    std::filesystem::path exePath = getExecutablePath();
+    if (exePath.empty())
+        return std::string("");
+
+    // Construct absolute path
+    std::filesystem::path fullPath = exePath.parent_path().append(relativePath);
+
+    // Open the file
+    std::ifstream file(fullPath, std::ios::in | std::ios::binary);
+    if (!file.is_open()) {
+        std::cerr << "Error opening file: " << fullPath << std::endl;
+        return "";
+    }
+
+    // Read the file content
+    std::stringstream buffer;
+    buffer << file.rdbuf();
+    file.close();
+
+    // Return content as std::string
+    return buffer.str();
+}
+
 void testGLTFModelLoading() {
     // Create testModel path
-    std::filesystem::path testModelPath = file::getExecutablePath().parent_path().append("assets/cube/Cube.gltf");
+    std::filesystem::path testModelPath = getExecutablePath().parent_path().append("assets/cube/Cube.gltf");
     
     // Keep time & load testModel
     auto start = std::chrono::high_resolution_clock::now();
@@ -62,12 +105,9 @@ void testGLTFModelLoading() {
 
     delete testModel;
 }
+#pragma endregion
 
 int main() {
-    // Test GLTF loading
-    testGLTFModelLoading();
-    return 0;
-
     // Create a window
     sf::Window window(sf::VideoMode(1920, 1080), "Engine Test Window", sf::Style::Default, sf::ContextSettings(24, 8, 4, 4, 6));
 
@@ -82,8 +122,8 @@ int main() {
     std::cout << "OpenGL Version: " << glGetString(GL_VERSION) << std::endl;
 
     // Create and compile shader program
-    GLuint vertexShader = shader::compileShader(GL_VERTEX_SHADER, file::readFileToString("assets/default.vert"));
-    GLuint fragmentShader = shader::compileShader(GL_FRAGMENT_SHADER, file::readFileToString("assets/default.frag"));
+    GLuint vertexShader = shader::compileShader(GL_VERTEX_SHADER, readFileToString("assets/default.vert"));
+    GLuint fragmentShader = shader::compileShader(GL_FRAGMENT_SHADER, readFileToString("assets/default.frag"));
     GLuint shaderProgram = shader::linkProgram(vertexShader, fragmentShader);
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);

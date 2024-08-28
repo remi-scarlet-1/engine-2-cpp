@@ -18,7 +18,7 @@ const char* getShaderTypeName(GLenum shaderType) {
 static int success;
 static char infoLog[512];
 
-unsigned int shader::compileShader(unsigned int shaderType, std::string shaderSource) {
+unsigned int engine::compileShader(unsigned int shaderType, std::string shaderSource) {
     GLuint shader = glCreateShader(shaderType);
     const char* source = shaderSource.c_str();
     glShaderSource(shader, 1, &source, NULL);
@@ -34,7 +34,7 @@ unsigned int shader::compileShader(unsigned int shaderType, std::string shaderSo
     return shader;
 }
 
-unsigned int shader::linkProgram(unsigned int vertexShader, unsigned int fragmentShader) {
+unsigned int engine::linkProgram(unsigned int vertexShader, unsigned int fragmentShader) {
     GLuint program = glCreateProgram();
     glAttachShader(program, vertexShader);
     glAttachShader(program, fragmentShader);

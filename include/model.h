@@ -5,7 +5,7 @@
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 
-namespace model {
+namespace engine {
     /// <summary>
     /// Represents a single mesh primitive (aka. submesh) of a mesh.
     /// </summary>

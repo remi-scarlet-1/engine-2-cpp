@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-namespace shader {
+namespace engine {
 	/// <summary> Compiles a shader from source. Source must be provided in form of a std::string. </summary>
 	/// <returns> OpenGL handle to successfuly compiled shader or 0. </returns>
 	unsigned int compileShader(unsigned int shaderType, std::string shaderSource);

@@ -53,10 +53,9 @@ project "Runtime"
 
 	-- Organize virtual folders
 	vpaths {
-		["Assets/*"] = { "./assets/**.*" },
-		["Header/*"] = { "./src/**.h", "./src/**.hpp" },
-		["Source/*"] = { "./src/**.c", "./src/**.cpp" },
-		["Vendor/*"] = { "./vendor/**.c", "./vendor/**.cpp" },
+		["Assets/*"] 		= { "./assets/**.*" },
+		["Source/*"] 		= { "./src/**.c", "./src/**.cpp", "./src/**.h", "./src/**.hpp" },
+		["Vendor/*"] 		= { "./vendor/**.c", "./vendor/**.cpp" },
 	}
 
 	-- Copy assets into bin

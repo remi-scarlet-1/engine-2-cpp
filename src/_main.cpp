@@ -8,11 +8,11 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "model.h"
-#include "shader.h"
-#include "camera.h"
-#include "utils/filesystem.h"
-#include "utils/time.h"
+#include "Utilities/filesystem.h"
+#include "Utilities/time.h"
+#include "Assets/model.h"
+#include "Assets/shader.h"
+#include "Rendering/camera.h"
 
 GLuint uploadTestBoxToGPU(unsigned int& indexCount)
 {

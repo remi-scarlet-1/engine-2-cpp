@@ -1,9 +1,6 @@
 #include <iostream>
 #include <chrono>
 #include <string>
-#include <fstream>
-#include <filesystem>
-#include <windows.h>
 
 #include <SFML/Window.hpp>
 #include <SFML/System.hpp>
@@ -11,51 +8,12 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "camera.h"
 #include "model.h"
 #include "shader.h"
-
-#pragma region Helper Functions
-std::filesystem::path getExecutablePath() {
-    // Try get exePath (using Windows OS function)
-    char buffer[MAX_PATH];
-    DWORD result = GetModuleFileNameA(NULL, buffer, sizeof(buffer));
-
-    // Check if getting exePath succeded
-    if (result == 0) {
-        std::cerr << "Error getting executable path: " << GetLastError() << std::endl;
-        return std::filesystem::path("");
-    }
-
-    // Return path
-    return std::filesystem::path(buffer);
-}
-
-std::string readFileToString(const char* relativePath) {
-    // Get exePath
-    std::filesystem::path exePath = getExecutablePath();
-    if (exePath.empty())
-        return std::string("");
-
-    // Construct absolute path
-    std::filesystem::path fullPath = exePath.parent_path().append(relativePath);
-
-    // Open the file
-    std::ifstream file(fullPath, std::ios::in | std::ios::binary);
-    if (!file.is_open()) {
-        std::cerr << "Error opening file: " << fullPath << std::endl;
-        return "";
-    }
-
-    // Read the file content
-    std::stringstream buffer;
-    buffer << file.rdbuf();
-    file.close();
-
-    // Return content as std::string
-    return buffer.str();
-}
-#pragma endregion
+#include "input.h"
+#include "camera.h"
+#include "utils/filesystem.h"
+#include "utils/time.h"
 
 GLuint uploadTestBoxToGPU()
 {
@@ -126,8 +84,7 @@ GLuint uploadTestBoxToGPU()
 }
 
 int main() {
-    // Create a window
-    sf::Window window(sf::VideoMode(1920, 1080), "Engine Test Window", sf::Style::Default, sf::ContextSettings(24, 8, 4, 4, 6));
+    sf::Window window(sf::VideoMode(1920, 1080), "Engine Test Window", (sf::Style::Titlebar | sf::Style::Close), sf::ContextSettings(24, 8, 4, 4, 6));
     window.setFramerateLimit(500);
 
     // Load OpenGL functions
@@ -147,8 +104,8 @@ int main() {
     GLuint vao = uploadTestBoxToGPU();
 
     // Load shader
-    GLuint vertexShader = engine::compileShader(GL_VERTEX_SHADER, readFileToString("assets/default.vert"));
-    GLuint fragmentShader = engine::compileShader(GL_FRAGMENT_SHADER, readFileToString("assets/default.frag"));
+    GLuint vertexShader = engine::compileShader(GL_VERTEX_SHADER, engine::utils::loadFileToString(engine::utils::getAssetsDir().append("default.vert")));
+    GLuint fragmentShader = engine::compileShader(GL_FRAGMENT_SHADER, engine::utils::loadFileToString(engine::utils::getAssetsDir().append("default.frag")));
     GLuint shaderProgram = engine::linkProgram(vertexShader, fragmentShader);
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);

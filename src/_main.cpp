@@ -151,7 +151,9 @@ int main() {
 
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
-    glFrontFace(GL_CCW);
+    glFrontFace(GL_CW); // Seems to be inverted (GL_CW -> GL_CCW) because of the engines use of a left-hand coordinate system
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
 
     while (window.isOpen()) {
         // Handle events

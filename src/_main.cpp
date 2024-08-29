@@ -10,7 +10,6 @@
 
 #include "model.h"
 #include "shader.h"
-#include "input.h"
 #include "camera.h"
 #include "utils/filesystem.h"
 #include "utils/time.h"
@@ -137,7 +136,7 @@ int main() {
         lastMousePosX = sf::Mouse::getPosition().x;
         lastMousePosY = sf::Mouse::getPosition().y;
 
-        camera.updateMovement(moveInput, 0.001f);
+        camera.updateMovement(moveInput, engine::utils::getDeltaTime());
         camera.updateMouselook(xDelta, yDelta);
 
         // Clear
@@ -168,6 +167,7 @@ int main() {
 
         // Swap buffers
         window.display();
+        engine::utils::updateTime();
     }
 
     // Cleanup

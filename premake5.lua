@@ -15,13 +15,13 @@ project "Runtime"
 	-- Source
 	files { 
 		"./assets/**.*",
-		"./include/**.h",
+		"./src/**.h",
 		"./src/**.cpp",
 		"./vendor/GLAD/src/glad.c"
 	}
 
 	includedirs {
-		"include",
+		"src",
 		"vendor/SFML-2.6.1/include",
 		"vendor/GLAD/include",
 		"vendor/GLM/include",
@@ -54,7 +54,7 @@ project "Runtime"
 	-- Organize virtual folders
 	vpaths {
 		["Assets/*"] = { "./assets/**.*" },
-		["Header/*"] = { "./include/**.h", "./include/**.hpp" },
+		["Header/*"] = { "./src/**.h", "./src/**.hpp" },
 		["Source/*"] = { "./src/**.c", "./src/**.cpp" },
 		["Vendor/*"] = { "./vendor/**.c", "./vendor/**.cpp" },
 	}

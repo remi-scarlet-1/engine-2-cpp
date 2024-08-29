@@ -9,9 +9,11 @@ This needs to be reimplemented and maybe another lighter lib then TinyGLTF...
   
 - [x] implement time module (delta time)
 - [x] implement filesystemHelper (getExecutableDir, getAssetDir, readFileToString)
-- [ ] general refactor & docs
+				
 - [ ] clean up main.cpp
 - [ ] render callback
+- [ ] renderer
   
-- [ ] figure out why primitives (submeshes) seem broken when rendered. Validate loaded intyGLTF data
+- [x] figure out why primitives (submeshes) seem broken when rendered. Validate loaded intyGLTF data
 - [ ] maybe rework model loading, cause its turbo scuffed
+- [ ] general refactor & docs

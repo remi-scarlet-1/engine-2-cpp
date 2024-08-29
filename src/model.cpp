@@ -19,7 +19,7 @@ void copyVertexBuffer(const tinygltf::Accessor& accessor, const tinygltf::Buffer
     memcpy(targetArray, dataPtr, accessor.count * sizeof(T));
 }
 
-engine::Primitive* loadPrimitive(const tinygltf::Model& tinyModel, const tinygltf::Primitive& tinyPrimitive)
+engine::MeshPrimitive* loadPrimitive(const tinygltf::Model& tinyModel, const tinygltf::Primitive& tinyPrimitive)
 {
     // Extract sizes of various attributes
     std::size_t numIndices = tinyModel.accessors[tinyPrimitive.indices].count;
@@ -84,7 +84,7 @@ engine::Primitive* loadPrimitive(const tinygltf::Model& tinyModel, const tinyglt
     }
 
     // Create and return a new Primitive object
-    return new engine::Primitive(
+    return new engine::MeshPrimitive(
         numIndices, 
         numPositions, 
         numNormals, 
@@ -125,11 +125,11 @@ engine::Model* engine::loadModelGLTF(const std::filesystem::path& path)
     for (size_t i = 0; i < numMeshes; i++) {
         // Collect primitives
         const std::size_t numPrimitives = tinyModel.meshes[i].primitives.size();
-        const Primitive** primitives = new const Primitive*[numPrimitives];
+        const MeshPrimitive** primitives = new const MeshPrimitive*[numPrimitives];
 
         for (size_t j = 0; j < numPrimitives; j++)
         {
-            const engine::Primitive* primitive = loadPrimitive(tinyModel, tinyModel.meshes[i].primitives[j]);
+            const engine::MeshPrimitive* primitive = loadPrimitive(tinyModel, tinyModel.meshes[i].primitives[j]);
             if (primitive)
                 primitives[j] = primitive; // Save constructed primitive
         }

@@ -9,7 +9,7 @@ namespace engine {
     /// <summary>
     /// Represents a single mesh primitive (aka. submesh) of a mesh.
     /// </summary>
-    struct Primitive {
+    struct MeshPrimitive {
         const std::size_t numIndices;
         const std::size_t numPositions;
         const std::size_t numNormals;
@@ -24,7 +24,7 @@ namespace engine {
         const bool hasUvs;
 
         // Constructor to initialize all fields
-        Primitive(
+        MeshPrimitive(
             const std::size_t numIndices, 
             const std::size_t numPositions, 
             const std::size_t numNormals, 
@@ -50,7 +50,7 @@ namespace engine {
         {}
 
         // Destructor to free allocated memory
-        ~Primitive() {
+        ~MeshPrimitive() {
             delete[] bIndices;
             delete[] bPositions;
             delete[] bNormals;
@@ -58,24 +58,24 @@ namespace engine {
         }
 
         // Delete copy and move constructors/assignments to prevent copying
-        Primitive(const Primitive&) = delete; Primitive& operator=(const Primitive&) = delete;
-        Primitive(Primitive&&) = delete; Primitive& operator=(Primitive&&) = delete;
+        MeshPrimitive(const MeshPrimitive&) = delete; MeshPrimitive& operator=(const MeshPrimitive&) = delete;
+        MeshPrimitive(MeshPrimitive&&) = delete; MeshPrimitive& operator=(MeshPrimitive&&) = delete;
     };
 
     /// <summary>
     /// Represents a mesh of a model, with all its primitives.
     /// </summary>
     struct Mesh {
-        const std::size_t numPrimitives;
-        const Primitive* const* const primitives;
+        const std::size_t numMeshPrimitives;
+        const MeshPrimitive* const* const meshPrimitives;
 
-        Mesh(std::size_t numPrimitives, const Primitive** primitives)
-            : numPrimitives(numPrimitives), primitives(primitives) {}
+        Mesh(std::size_t numMeshPrimitives, const MeshPrimitive** meshPrimitives)
+            : numMeshPrimitives(numMeshPrimitives), meshPrimitives(meshPrimitives) {}
 
         ~Mesh() {
-            for (std::size_t i = 0; i < numPrimitives; ++i)
-                delete primitives[i];
-            delete[] primitives;
+            for (std::size_t i = 0; i < numMeshPrimitives; ++i)
+                delete meshPrimitives[i];
+            delete[] meshPrimitives;
         }
 
         // Delete copy and move constructors/assignments to prevent copying

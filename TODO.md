@@ -7,9 +7,11 @@ This needs to be reimplemented and maybe another lighter lib then TinyGLTF...
 - [x] implement test rendering
 - [x] implement camera  
   
-- [ ] implement time module (delta time)
-- [ ] implement filesystemHelper (getExecutableDir, getAssetDir, readFileToString)
-- [ ] clean up main.cpp  
+- [x] implement time module (delta time)
+- [x] implement filesystemHelper (getExecutableDir, getAssetDir, readFileToString)
+- [ ] general refactor & docs
+- [ ] clean up main.cpp
+- [ ] render callback
   
 - [ ] figure out why primitives (submeshes) seem broken when rendered. Validate loaded intyGLTF data
 - [ ] maybe rework model loading, cause its turbo scuffed

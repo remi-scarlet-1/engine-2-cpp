@@ -1,9 +1,10 @@
 #include "time.h"
 
 #include <chrono>
+#include <iostream>
 
 auto previousTime = std::chrono::high_resolution_clock::now();
-float deltaTime;
+float deltaT = 0.0f;
 
 void engine::utils::updateTime()
 {
@@ -11,10 +12,10 @@ void engine::utils::updateTime()
 	std::chrono::duration<float> duration = currentTime - previousTime;
 	previousTime = currentTime;
 
-	deltaTime = duration.count();
+	deltaT = duration.count();
 }
 
-float engine::utils::getDeltaTime()
+float engine::utils::deltaTime()
 {
-	return deltaTime;
+	return deltaT;
 }

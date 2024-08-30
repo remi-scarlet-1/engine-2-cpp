@@ -89,6 +89,7 @@ int main() {
     );
 
     renderer.initialize();
+    renderer.OnFrameEndSubscribe(utils::updateTime);
 
     while (renderer.windowIsOpen()) {
         // Handle events
@@ -97,11 +98,9 @@ int main() {
             if (event.type == sf::Event::Closed)
                 renderer.windowClose();
 
-        utils::updateTime();
-
         // Update camera movement
         glm::i32vec2 mousedelta = getMouselookInput();
-        camera.updateMovement(getMoveInput(), utils::getDeltaTime());
+        camera.updateMovement(getMoveInput(), utils::deltaTime());
         camera.updateMouselook(mousedelta.x, mousedelta.y);
 
         // Render

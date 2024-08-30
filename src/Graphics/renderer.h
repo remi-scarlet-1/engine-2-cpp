@@ -1,5 +1,8 @@
 #pragma once
 
+#include <vector>
+#include <functional>
+
 #include <SFML/Window.hpp>
 #include <glm/glm.hpp>
 
@@ -12,6 +15,7 @@ namespace engine::graphics {
     public:
         Renderer(const char* windowTitle, glm::i16vec2 windowRes, bool windowResizable, unsigned int frameLimit);
 
+
         void initialize();
         void clear();
         void draw(Mesh& mesh, Program& program, Camera& camera);
@@ -22,7 +26,14 @@ namespace engine::graphics {
         bool windowPollEvent(sf::Event& event) { return window->pollEvent(event); }
         void windowClose() { window->close(); }
 
+        // Callbacks
+        using OnFrameEnd = std::function<void()>;
+
+        void OnFrameEndSubscribe(OnFrameEnd callback) { onFrameEndCallbacks.push_back(callback); }
+
     private:
+
+        std::vector<OnFrameEnd> onFrameEndCallbacks;
         sf::Window* window;
     };
 }

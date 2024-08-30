@@ -60,5 +60,8 @@ void engine::graphics::Renderer::draw(Mesh& mesh, Program& program, Camera& came
 
 void engine::graphics::Renderer::present()
 {
+    for (const auto& callback : onFrameEndCallbacks)
+        callback();
+
     window->display();
 }

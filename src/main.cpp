@@ -16,6 +16,8 @@
 #include "Graphics/camera.h"
 #include "Graphics/renderer.h"
 
+using namespace engine;
+
 float vertices[] = {
     -0.5f, -0.5f, -0.5f,
     -0.5f,  0.5f, -0.5f,
@@ -78,14 +80,12 @@ glm::vec3 getMoveInput() {
 #pragma endregion
 
 int main() {
-
-    // Load
-    auto renderer = engine::graphics::Renderer("Test Engine", glm::i16vec2(1920, 1080), false, 500);
-    auto camera = engine::graphics::Camera(5.0f, 0.25f, 68.0f, (16.0f / 9.0f), 0.001f, 1000.0f);
-    auto mesh = engine::graphics::Mesh(indices, 36, vertices, 24);
-    auto program = engine::graphics::Program(
-        engine::utils::loadFileToString(engine::utils::getAssetsDir().append("default.vert")), 
-        engine::utils::loadFileToString(engine::utils::getAssetsDir().append("default.frag"))
+    auto renderer = graphics::Renderer("Test Engine", glm::i16vec2(1920, 1080), false, 500);
+    auto camera = graphics::Camera(5.0f, 0.25f, 68.0f, (16.0f / 9.0f), 0.001f, 1000.0f);
+    auto mesh = graphics::Mesh(indices, 36, vertices, 24);
+    auto program = graphics::Program(
+        utils::loadFileToString(utils::getAssetsDir().append("default.vert")), 
+        utils::loadFileToString(utils::getAssetsDir().append("default.frag"))
     );
 
     renderer.initialize();
@@ -97,11 +97,11 @@ int main() {
             if (event.type == sf::Event::Closed)
                 renderer.windowClose();
 
-        engine::utils::updateTime();
+        utils::updateTime();
 
         // Update camera movement
         glm::i32vec2 mousedelta = getMouselookInput();
-        camera.updateMovement(getMoveInput(), engine::utils::getDeltaTime());
+        camera.updateMovement(getMoveInput(), utils::getDeltaTime());
         camera.updateMouselook(mousedelta.x, mousedelta.y);
 
         // Render

@@ -36,9 +36,8 @@ engine::assets::MeshPrimitive loadPrimitive(const tinygltf::Model& tinyModel, co
         case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT: {
             auto indexData = copyVertexBuffer<unsigned short>(indexAccessor, indexBuffer, indexBufferView);
             indices.resize(indexAccessor.count);
-            for (size_t i = 0; i < indexAccessor.count; ++i) {
-                indices[i] = indexData[i];
-            }
+            for (size_t i = 0; i < indexAccessor.count; ++i)
+                indices[i] = static_cast<unsigned int>(indexData[i]);
             break;
         }
         case TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT: {

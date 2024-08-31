@@ -79,14 +79,57 @@ glm::vec3 getMoveInput() {
 }
 #pragma endregion
 
+graphics::Mesh** loadModelMeshes(size_t& meshCount) {
+    // Load model
+    assets::Model* model = assets::loadModelGLTF(utils::getAssetsDir().append("sponza/sponza.glb"));
+
+    if (!model) {
+        std::cerr << "Failed to load model." << std::endl;
+        meshCount = 0;
+        return nullptr;
+    }
+
+    // Count total mesh primitives
+    meshCount = 0;
+    for (const auto& mesh : model->Meshes)
+        meshCount += mesh.MeshPrimitives.size();
+
+    // Allocate array for graphics::Mesh pointers
+    graphics::Mesh** meshes = new graphics::Mesh*[meshCount];
+
+    size_t meshCurrent = 0;
+    for (const auto& mesh : model->Meshes) {
+        for (const auto& primitive : mesh.MeshPrimitives) {
+            if (meshCurrent >= meshCount) {
+                std::cerr << "Buffer overrun detected" << std::endl;
+                break;
+            }
+
+            meshes[meshCurrent] = new graphics::Mesh(
+                primitive.Indices.data(), static_cast<int>(primitive.Indices.size()),
+                primitive.Positions.data(), static_cast<int>(primitive.Positions.size()),
+                primitive.Normals.data(), static_cast<int>(primitive.Normals.size())
+            );
+
+            ++meshCurrent;
+        }
+    }
+
+    // Clean up
+    delete model;
+    return meshes;
+}
+
 int main() {
     auto renderer = graphics::Renderer("Test Engine", glm::i16vec2(1920, 1080), false, 500);
     auto camera = graphics::Camera(5.0f, 0.25f, 68.0f, (16.0f / 9.0f), 0.001f, 1000.0f);
-    auto mesh = graphics::Mesh(indices, 36, vertices, 24);
     auto program = graphics::Program(
         utils::loadFileToString(utils::getAssetsDir().append("default.vert")), 
         utils::loadFileToString(utils::getAssetsDir().append("default.frag"))
     );
+
+    size_t meshCount = 0;
+    graphics::Mesh** meshes = loadModelMeshes(meshCount);
 
     renderer.initialize();
     renderer.OnFrameEndSubscribe(utils::updateTime);
@@ -105,9 +148,16 @@ int main() {
 
         // Render
         renderer.clear();
-        renderer.draw(mesh, program, camera);
+
+        for (size_t i = 0; i < meshCount; i++)
+            renderer.draw(*meshes[i], program, camera);
+
         renderer.present();
     }
+
+    for (size_t i = 0; i < meshCount; ++i)
+        delete meshes[i];
+    delete[] meshes;
 
     return 0;
 }

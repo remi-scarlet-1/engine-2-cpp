@@ -6,98 +6,77 @@
 #include <TinyGLTF/tiny_gltf.h>
 #include <string>
 #include <iostream>
+#include <stdexcept>
 
-bool MockLoadImageData(tinygltf::Image* image, const int image_idx, std::string* err, std::string* warn, int req_width, int req_height, const unsigned char* bytes, int size, void* user_data) { return true;}
-bool MockWriteImageData(const std::string* basepath, const std::string* filename, const tinygltf::Image* image, bool embedImages, const tinygltf::FsCallbacks* fs_cb, const tinygltf::URICallbacks* uri_cb, std::string* out_uri, void* user_pointer) { return true;}
+bool MockLoadImageData(tinygltf::Image* image, const int image_idx, std::string* err, std::string* warn, int req_width, int req_height, const unsigned char* bytes, int size, void* user_data) { return true; }
+bool MockWriteImageData(const std::string* basepath, const std::string* filename, const tinygltf::Image* image, bool embedImages, const tinygltf::FsCallbacks* fs_cb, const tinygltf::URICallbacks* uri_cb, std::string* out_uri, void* user_pointer) { return true; }
 
-/// <summary>
-/// Copies a TinyGLTF buffer into the provided array. Make sure size matches!
-/// </summary>
 template<typename T>
-void copyVertexBuffer(const tinygltf::Accessor& accessor, const tinygltf::Buffer& buffer, const tinygltf::BufferView& bufferView, T* targetArray) {
+std::vector<T> copyVertexBuffer(const tinygltf::Accessor& accessor, const tinygltf::Buffer& buffer, const tinygltf::BufferView& bufferView) {
     const unsigned char* dataPtr = buffer.data.data() + bufferView.byteOffset + accessor.byteOffset;
-    memcpy(targetArray, dataPtr, accessor.count * sizeof(T));
+
+    std::vector<T> targetVector(accessor.count);
+    memcpy(targetVector.data(), dataPtr, accessor.count * sizeof(T));
+
+    return targetVector;
 }
 
-engine::MeshPrimitive* loadPrimitive(const tinygltf::Model& tinyModel, const tinygltf::Primitive& tinyPrimitive)
-{
-    // Extract sizes of various attributes
-    std::size_t numIndices = tinyModel.accessors[tinyPrimitive.indices].count;
-    std::size_t numPositions = tinyPrimitive.attributes.count("POSITION") > 0 ? tinyModel.accessors[tinyPrimitive.attributes.at("POSITION")].count : 0;
-    std::size_t numNormals = tinyPrimitive.attributes.count("NORMAL") > 0 ? tinyModel.accessors[tinyPrimitive.attributes.at("NORMAL")].count : 0;
-    std::size_t numUVs = tinyPrimitive.attributes.count("TEXCOORD_0") > 0 ? tinyModel.accessors[tinyPrimitive.attributes.at("TEXCOORD_0")].count : 0;
-    
-    // Create raw arrays to store data
-    unsigned int* bIndices = new unsigned int[numIndices];
-    glm::vec3* bPositions = numPositions > 0 ? new glm::vec3[numPositions] : nullptr;
-    glm::vec3* bNormals = numNormals > 0 ? new glm::vec3[numNormals] : nullptr;
-    glm::vec2* bUVs = numUVs > 0 ? new glm::vec2[numUVs] : nullptr;
+engine::assets::MeshPrimitive loadPrimitive(const tinygltf::Model& tinyModel, const tinygltf::Primitive& tinyPrimitive) {
+    std::vector<unsigned int> indices;
+    std::vector<float> positions;
+    std::vector<float> normals;
+    std::vector<float> uvs;
 
     // Indices
     const tinygltf::Accessor& indexAccessor = tinyModel.accessors[tinyPrimitive.indices];
     const tinygltf::BufferView& indexBufferView = tinyModel.bufferViews[indexAccessor.bufferView];
     const tinygltf::Buffer& indexBuffer = tinyModel.buffers[indexBufferView.buffer];
-    const unsigned char* indexDataPtr = indexBuffer.data.data() + indexBufferView.byteOffset + indexAccessor.byteOffset;
 
     switch (indexAccessor.componentType) {
-        case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT: // In case of ushort (16-bit) format
-            for (std::size_t i = 0; i < numIndices; ++i)
-                bIndices[i] = reinterpret_cast<const unsigned short*>(indexDataPtr)[i];
+        case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT: {
+            auto indexData = copyVertexBuffer<unsigned short>(indexAccessor, indexBuffer, indexBufferView);
+            indices.resize(indexAccessor.count);
+            for (size_t i = 0; i < indexAccessor.count; ++i) {
+                indices[i] = indexData[i];
+            }
             break;
-
-        case TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT: // In case of uint (32-bit) format
-            for (std::size_t i = 0; i < numIndices; ++i)
-                bIndices[i] = reinterpret_cast<const unsigned int*>(indexDataPtr)[i];
+        }
+        case TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT: {
+            indices = copyVertexBuffer<unsigned int>(indexAccessor, indexBuffer, indexBufferView);
             break;
-
-        default: // Fail if neither ushort (16-bit) nor uint (32-bit) format matches
-            std::cerr << "Unsupported index component type" << std::endl;
-            delete[] bIndices;
-            if (bPositions) delete[] bPositions;
-            if (bNormals) delete[] bNormals;
-            if (bUVs) delete[] bUVs;
-            return nullptr;
+        }
+        default:
+            throw std::runtime_error("Unsupported index component type");
     }
 
     // Positions
-    if (numPositions > 0) {
+    if (tinyPrimitive.attributes.count("POSITION") > 0) {
         const tinygltf::Accessor& positionAccessor = tinyModel.accessors[tinyPrimitive.attributes.at("POSITION")];
         const tinygltf::BufferView& positionBufferView = tinyModel.bufferViews[positionAccessor.bufferView];
         const tinygltf::Buffer& positionBuffer = tinyModel.buffers[positionBufferView.buffer];
-        copyVertexBuffer(positionAccessor, positionBuffer, positionBufferView, bPositions);
+        positions = copyVertexBuffer<float>(positionAccessor, positionBuffer, positionBufferView);
     }
 
     // Normals
-    if (numNormals > 0) {
+    if (tinyPrimitive.attributes.count("NORMAL") > 0) {
         const tinygltf::Accessor& normalAccessor = tinyModel.accessors[tinyPrimitive.attributes.at("NORMAL")];
         const tinygltf::BufferView& normalBufferView = tinyModel.bufferViews[normalAccessor.bufferView];
         const tinygltf::Buffer& normalBuffer = tinyModel.buffers[normalBufferView.buffer];
-        copyVertexBuffer(normalAccessor, normalBuffer, normalBufferView, bNormals);
+        normals = copyVertexBuffer<float>(normalAccessor, normalBuffer, normalBufferView);
     }
 
     // UVs
-    if (numUVs > 0) {
+    if (tinyPrimitive.attributes.count("TEXCOORD_0") > 0) {
         const tinygltf::Accessor& uvAccessor = tinyModel.accessors[tinyPrimitive.attributes.at("TEXCOORD_0")];
         const tinygltf::BufferView& uvBufferView = tinyModel.bufferViews[uvAccessor.bufferView];
         const tinygltf::Buffer& uvBuffer = tinyModel.buffers[uvBufferView.buffer];
-        copyVertexBuffer(uvAccessor, uvBuffer, uvBufferView, bUVs);
+        uvs = copyVertexBuffer<float>(uvAccessor, uvBuffer, uvBufferView);
     }
 
-    // Create and return a new Primitive object
-    return new engine::MeshPrimitive(
-        numIndices, 
-        numPositions, 
-        numNormals, 
-        numUVs, 
-        bIndices, 
-        bPositions, 
-        bNormals, 
-        bUVs
-    );
+    return engine::assets::MeshPrimitive(std::move(indices), std::move(positions), std::move(normals), std::move(uvs));
 }
 
-engine::Model* engine::loadModelGLTF(const std::filesystem::path& path)
-{
+engine::assets::Model* engine::assets::loadModelGLTF(const std::filesystem::path& path) {
     // Setup
     tinygltf::Model tinyModel;
     tinygltf::TinyGLTF tinyLoader;
@@ -109,7 +88,7 @@ engine::Model* engine::loadModelGLTF(const std::filesystem::path& path)
     bool success = false;
     std::string err;
     std::string warn;
-    
+
     if (extension == ".gltf") success = tinyLoader.LoadASCIIFromFile(&tinyModel, &err, &warn, path.string());
     if (extension == ".glb") success = tinyLoader.LoadBinaryFromFile(&tinyModel, &err, &warn, path.string());
 
@@ -119,24 +98,19 @@ engine::Model* engine::loadModelGLTF(const std::filesystem::path& path)
     }
 
     // Collect meshes
-    const std::size_t numMeshes = tinyModel.meshes.size();
-    const Mesh** meshes = new const Mesh*[numMeshes];
+    std::vector<engine::assets::Mesh> meshes;
+    meshes.reserve(tinyModel.meshes.size());
 
-    for (size_t i = 0; i < numMeshes; i++) {
-        // Collect primitives
-        const std::size_t numPrimitives = tinyModel.meshes[i].primitives.size();
-        const MeshPrimitive** primitives = new const MeshPrimitive*[numPrimitives];
+    for (const auto& tinyMesh : tinyModel.meshes) {
+        std::vector<engine::assets::MeshPrimitive> primitives;
+        primitives.reserve(tinyMesh.primitives.size());
 
-        for (size_t j = 0; j < numPrimitives; j++)
-        {
-            const engine::MeshPrimitive* primitive = loadPrimitive(tinyModel, tinyModel.meshes[i].primitives[j]);
-            if (primitive)
-                primitives[j] = primitive; // Save constructed primitive
-        }
+        for (const auto& tinyPrimitive : tinyMesh.primitives)
+            primitives.emplace_back(loadPrimitive(tinyModel, tinyPrimitive));
 
-        // Save constructed mesh
-        meshes[i] = new Mesh(numPrimitives, primitives);
+        meshes.emplace_back(std::move(primitives));
     }
 
-    return new Model(numMeshes, meshes);
+    return new engine::assets::Model(std::move(meshes));
+
 }

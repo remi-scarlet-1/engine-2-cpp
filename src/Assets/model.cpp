@@ -12,13 +12,29 @@ bool MockLoadImageData(tinygltf::Image* image, const int image_idx, std::string*
 bool MockWriteImageData(const std::string* basepath, const std::string* filename, const tinygltf::Image* image, bool embedImages, const tinygltf::FsCallbacks* fs_cb, const tinygltf::URICallbacks* uri_cb, std::string* out_uri, void* user_pointer) { return true; }
 
 template<typename T>
-std::vector<T> copyVertexBuffer(const tinygltf::Accessor& accessor, const tinygltf::Buffer& buffer, const tinygltf::BufferView& bufferView) {
+std::vector<T> extractVertexData(const tinygltf::Accessor& accessor, const tinygltf::Buffer& buffer, const tinygltf::BufferView& bufferView) {
+    std::vector<T> vertexData;
+    vertexData.reserve(accessor.count * tinygltf::GetNumComponentsInType(accessor.type)); // Reserve space for all components
+
+    // Pointer to the start of the data in the buffer
     const unsigned char* dataPtr = buffer.data.data() + bufferView.byteOffset + accessor.byteOffset;
 
-    std::vector<T> targetVector(accessor.count);
-    memcpy(targetVector.data(), dataPtr, accessor.count * sizeof(T));
+    // Calculate the stride between elements, or use the size of the type if no stride is set
+    size_t stride = bufferView.byteStride ? bufferView.byteStride : sizeof(T) * tinygltf::GetNumComponentsInType(accessor.type);
 
-    return targetVector;
+    // Extract data element by element
+    for (size_t i = 0; i < accessor.count; ++i) {
+        const unsigned char* elementPtr = dataPtr + i * stride;
+
+        // Extract each component of the element (e.g., x, y, z for a VEC3)
+        for (size_t component = 0; component < tinygltf::GetNumComponentsInType(accessor.type); ++component) {
+            T value;
+            memcpy(&value, elementPtr + component * sizeof(T), sizeof(T));
+            vertexData.push_back(value);
+        }
+    }
+
+    return vertexData;
 }
 
 engine::assets::MeshPrimitive loadPrimitive(const tinygltf::Model& tinyModel, const tinygltf::Primitive& tinyPrimitive) {
@@ -34,14 +50,14 @@ engine::assets::MeshPrimitive loadPrimitive(const tinygltf::Model& tinyModel, co
 
     switch (indexAccessor.componentType) {
         case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT: {
-            auto indexData = copyVertexBuffer<unsigned short>(indexAccessor, indexBuffer, indexBufferView);
+            auto indexData = extractVertexData<unsigned short>(indexAccessor, indexBuffer, indexBufferView);
             indices.resize(indexAccessor.count);
             for (size_t i = 0; i < indexAccessor.count; ++i)
                 indices[i] = static_cast<unsigned int>(indexData[i]);
             break;
         }
         case TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT: {
-            indices = copyVertexBuffer<unsigned int>(indexAccessor, indexBuffer, indexBufferView);
+            indices = extractVertexData<unsigned int>(indexAccessor, indexBuffer, indexBufferView);
             break;
         }
         default:
@@ -53,7 +69,7 @@ engine::assets::MeshPrimitive loadPrimitive(const tinygltf::Model& tinyModel, co
         const tinygltf::Accessor& positionAccessor = tinyModel.accessors[tinyPrimitive.attributes.at("POSITION")];
         const tinygltf::BufferView& positionBufferView = tinyModel.bufferViews[positionAccessor.bufferView];
         const tinygltf::Buffer& positionBuffer = tinyModel.buffers[positionBufferView.buffer];
-        positions = copyVertexBuffer<float>(positionAccessor, positionBuffer, positionBufferView);
+        positions = extractVertexData<float>(positionAccessor, positionBuffer, positionBufferView);
     }
 
     // Normals
@@ -61,7 +77,7 @@ engine::assets::MeshPrimitive loadPrimitive(const tinygltf::Model& tinyModel, co
         const tinygltf::Accessor& normalAccessor = tinyModel.accessors[tinyPrimitive.attributes.at("NORMAL")];
         const tinygltf::BufferView& normalBufferView = tinyModel.bufferViews[normalAccessor.bufferView];
         const tinygltf::Buffer& normalBuffer = tinyModel.buffers[normalBufferView.buffer];
-        normals = copyVertexBuffer<float>(normalAccessor, normalBuffer, normalBufferView);
+        normals = extractVertexData<float>(normalAccessor, normalBuffer, normalBufferView);
     }
 
     // UVs
@@ -69,7 +85,7 @@ engine::assets::MeshPrimitive loadPrimitive(const tinygltf::Model& tinyModel, co
         const tinygltf::Accessor& uvAccessor = tinyModel.accessors[tinyPrimitive.attributes.at("TEXCOORD_0")];
         const tinygltf::BufferView& uvBufferView = tinyModel.bufferViews[uvAccessor.bufferView];
         const tinygltf::Buffer& uvBuffer = tinyModel.buffers[uvBufferView.buffer];
-        uvs = copyVertexBuffer<float>(uvAccessor, uvBuffer, uvBufferView);
+        uvs = extractVertexData<float>(uvAccessor, uvBuffer, uvBufferView);
     }
 
     return engine::assets::MeshPrimitive(std::move(indices), std::move(positions), std::move(normals), std::move(uvs));

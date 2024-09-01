@@ -25,7 +25,8 @@ project "Runtime"
 		"vendor/SFML-2.6.1/include",
 		"vendor/GLAD/include",
 		"vendor/GLM/include",
-		"vendor/TinyGLTF/include"
+		"vendor/TinyGLTF/include",
+		"vendor/entt/include"
 	}
 
 	-- Libraries

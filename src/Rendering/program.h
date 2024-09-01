@@ -2,7 +2,7 @@
 
 #include <string>
 
-namespace engine::graphics {
+namespace engine::rendering {
 	class Program
 	{
 	public:

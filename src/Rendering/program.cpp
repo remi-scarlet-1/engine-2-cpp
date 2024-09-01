@@ -50,7 +50,7 @@ unsigned int linkProgram(unsigned int vertexShader, unsigned int fragmentShader)
     return program;
 }
 
-engine::graphics::Program::Program(std::string vertexShaderSource, std::string fragmentShaderSource)
+engine::rendering::Program::Program(std::string vertexShaderSource, std::string fragmentShaderSource)
 {
 	GLuint vertexShader = compileShader(GL_VERTEX_SHADER, vertexShaderSource.c_str());
 	GLuint fragmentShader = compileShader(GL_FRAGMENT_SHADER, fragmentShaderSource.c_str());
@@ -65,17 +65,17 @@ engine::graphics::Program::Program(std::string vertexShaderSource, std::string f
     locationProjectionMatrix = glGetUniformLocation(program, "projection");
 }
 
-engine::graphics::Program::~Program()
+engine::rendering::Program::~Program()
 {
     glDeleteProgram(program);
 }
 
-const unsigned int engine::graphics::Program::getHandle()
+const unsigned int engine::rendering::Program::getHandle()
 {
     return program;
 }
 
-void engine::graphics::Program::getLocations(
+void engine::rendering::Program::getLocations(
     unsigned int& modelMatrixLoc, 
     unsigned int& modelViewLoc, 
     unsigned int& modelProjectionLoc)

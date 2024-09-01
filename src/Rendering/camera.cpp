@@ -6,7 +6,7 @@
 static const glm::vec3 WORLD_UP = glm::vec3(0.0f, 1.0f, 0.0f);
 static const float YAW_FIX_OFFSET = 90;
 
-engine::graphics::Camera::Camera(float moveSpeed, float lookSensitivity,
+engine::rendering::Camera::Camera(float moveSpeed, float lookSensitivity,
 				float fovy, float aspectRatio, float nearClip, float farClip)
 	  : moveSpeed(moveSpeed), lookSensitivity(lookSensitivity),
 		fovy(fovy), aspectRatio(aspectRatio), nearClip(nearClip), farClip(farClip),
@@ -19,12 +19,12 @@ engine::graphics::Camera::Camera(float moveSpeed, float lookSensitivity,
 	updateVectors();
 }
 
-const glm::vec3& engine::graphics::Camera::getPosition()
+const glm::vec3& engine::rendering::Camera::getPosition()
 {
 	return position;
 }
 
-const glm::mat4& engine::graphics::Camera::getViewMatrix()
+const glm::mat4& engine::rendering::Camera::getViewMatrix()
 {
 	if (viewDirty) {
 		view = glm::lookAtLH(position, position + front, up); // Use LH variant for left-handed coord system
@@ -34,7 +34,7 @@ const glm::mat4& engine::graphics::Camera::getViewMatrix()
 	return view;
 }
 
-const glm::mat4& engine::graphics::Camera::getProjectionMatrix()
+const glm::mat4& engine::rendering::Camera::getProjectionMatrix()
 {
 	if (projectionDirty) {
 		projection = glm::perspectiveLH(glm::radians(fovy), aspectRatio, nearClip, farClip); // Use LH variant for left-handed coord system
@@ -44,7 +44,7 @@ const glm::mat4& engine::graphics::Camera::getProjectionMatrix()
 	return projection;
 }
 
-void engine::graphics::Camera::updateMovement(const glm::vec3& input, float deltaTime)
+void engine::rendering::Camera::updateMovement(const glm::vec3& input, float deltaTime)
 {
 	if (glm::length(input) == 0.0f) // Fix for multiplying a 0 length vector (glm hates it and gives NaN yapping)
 		return;
@@ -54,7 +54,7 @@ void engine::graphics::Camera::updateMovement(const glm::vec3& input, float delt
 	viewDirty = true;
 }
 
-void engine::graphics::Camera::updateMouselook(int xDelta, int yDelta)
+void engine::rendering::Camera::updateMouselook(int xDelta, int yDelta)
 {
 	yaw += xDelta * lookSensitivity;
 	pitch += yDelta * lookSensitivity;
@@ -67,7 +67,7 @@ void engine::graphics::Camera::updateMouselook(int xDelta, int yDelta)
 	updateVectors();
 }
 
-void engine::graphics::Camera::updateVectors()
+void engine::rendering::Camera::updateVectors()
 {
 	// Yaw offset is needed to make camera front face Z+ in an left-handed coord system
 	front.x = cos(glm::radians(-yaw + YAW_FIX_OFFSET)) * cos(glm::radians(-pitch));

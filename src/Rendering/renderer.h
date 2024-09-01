@@ -10,7 +10,7 @@
 #include "camera.h"
 #include "mesh.h"
 
-namespace engine::graphics {
+namespace engine::rendering {
     class Renderer {
     public:
         Renderer(const char* windowTitle, glm::i16vec2 windowRes, bool windowResizable, unsigned int frameLimit);

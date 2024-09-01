@@ -5,7 +5,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glad/glad.h>
 
-engine::graphics::Renderer::Renderer(const char* windowTitle, glm::i16vec2 windowRes, bool windowResizable, unsigned int frameLimit)
+engine::rendering::Renderer::Renderer(const char* windowTitle, glm::i16vec2 windowRes, bool windowResizable, unsigned int frameLimit)
 {
     window = new sf::Window(
         sf::VideoMode(windowRes.x, windowRes.y), windowTitle, windowResizable ? sf::Style::Default : (sf::Style::Titlebar | sf::Style::Close),
@@ -21,7 +21,7 @@ engine::graphics::Renderer::Renderer(const char* windowTitle, glm::i16vec2 windo
     std::cout << "OpenGL Version: " << glGetString(GL_VERSION) << std::endl;
 }
 
-void engine::graphics::Renderer::initialize()
+void engine::rendering::Renderer::initialize()
 {
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
@@ -33,13 +33,13 @@ void engine::graphics::Renderer::initialize()
     glDepthFunc(GL_LESS);
 }
 
-void engine::graphics::Renderer::clear()
+void engine::rendering::Renderer::clear()
 {
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void engine::graphics::Renderer::draw(Mesh& mesh, Program& program, Camera& camera)
+void engine::rendering::Renderer::draw(Mesh& mesh, Program& program, Camera& camera)
 {
     glUseProgram(program.getHandle());
 
@@ -58,7 +58,7 @@ void engine::graphics::Renderer::draw(Mesh& mesh, Program& program, Camera& came
     glDrawElements(GL_TRIANGLES, mesh.getIndexCount(), GL_UNSIGNED_INT, 0);
 }
 
-void engine::graphics::Renderer::present()
+void engine::rendering::Renderer::present()
 {
     for (const auto& callback : onFrameEndCallbacks)
         callback();

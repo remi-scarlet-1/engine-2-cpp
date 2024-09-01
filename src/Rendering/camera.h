@@ -2,7 +2,7 @@
 
 #include <glm/glm.hpp>
 
-namespace engine::graphics {
+namespace engine::rendering {
     class Camera {
     public:
         Camera(

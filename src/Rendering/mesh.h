@@ -1,6 +1,6 @@
 #pragma once
 
-namespace engine::graphics {
+namespace engine::rendering {
 	class Mesh {
 	public:
 		Mesh(

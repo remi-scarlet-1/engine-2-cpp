@@ -11,10 +11,10 @@
 #include "Utilities/time.h"
 #include "Assets/model.h"
 
-#include "Graphics/mesh.h"
-#include "Graphics/program.h"
-#include "Graphics/camera.h"
-#include "Graphics/renderer.h"
+#include "Rendering/mesh.h"
+#include "Rendering/program.h"
+#include "Rendering/camera.h"
+#include "Rendering/renderer.h"
 
 using namespace engine;
 
@@ -79,7 +79,7 @@ glm::vec3 getMoveInput() {
 }
 #pragma endregion
 
-graphics::Mesh** loadModelMeshes(size_t& meshCount) {
+rendering::Mesh** loadModelMeshes(size_t& meshCount) {
     // Load model
     assets::Model* model = assets::loadModelGLTF(utils::getAssetsDir().append("sponza/sponza.glb"));
 
@@ -95,7 +95,7 @@ graphics::Mesh** loadModelMeshes(size_t& meshCount) {
         meshCount += mesh.MeshPrimitives.size();
 
     // Allocate array for graphics::Mesh pointers
-    graphics::Mesh** meshes = new graphics::Mesh*[meshCount];
+    rendering::Mesh** meshes = new rendering::Mesh*[meshCount];
 
     size_t meshCurrent = 0;
     for (const auto& mesh : model->Meshes) {
@@ -105,7 +105,7 @@ graphics::Mesh** loadModelMeshes(size_t& meshCount) {
                 break;
             }
 
-            meshes[meshCurrent] = new graphics::Mesh(
+            meshes[meshCurrent] = new rendering::Mesh(
                 primitive.Indices.data(), static_cast<int>(primitive.Indices.size()),
                 primitive.Positions.data(), static_cast<int>(primitive.Positions.size()),
                 primitive.Normals.data(), static_cast<int>(primitive.Normals.size())
@@ -121,15 +121,36 @@ graphics::Mesh** loadModelMeshes(size_t& meshCount) {
 }
 
 int main() {
-    auto renderer = graphics::Renderer("Test Engine", glm::i16vec2(1920, 1080), false, 500);
-    auto camera = graphics::Camera(5.0f, 0.25f, 68.0f, (16.0f / 9.0f), 0.001f, 1000.0f);
-    auto program = graphics::Program(
+    // Initialize systems:
+    // - window
+    // - renderer
+    // - resource manager
+
+    // Initialize ecs:
+    // - register components
+    // - register systems
+
+    // Initialize rest...
+
+
+    // Main loop
+
+    // - calculate delta time
+    // - handle input
+    // - update game logic (ecs)
+    // - render (present frame)
+
+    // Check if game should close
+
+    auto renderer = rendering::Renderer("Test Engine", glm::i16vec2(1920, 1080), false, 500);
+    auto camera = rendering::Camera(5.0f, 0.25f, 68.0f, (16.0f / 9.0f), 0.001f, 1000.0f);
+    auto program = rendering::Program(
         utils::loadFileToString(utils::getAssetsDir().append("default.vert")), 
         utils::loadFileToString(utils::getAssetsDir().append("default.frag"))
     );
 
     size_t meshCount = 0;
-    graphics::Mesh** meshes = loadModelMeshes(meshCount);
+    rendering::Mesh** meshes = loadModelMeshes(meshCount);
 
     renderer.initialize();
     renderer.OnFrameEndSubscribe(utils::updateTime);

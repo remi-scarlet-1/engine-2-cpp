@@ -17,39 +17,26 @@ project "Runtime"
 		"./assets/**.*",
 		"./src/**.h",
 		"./src/**.cpp",
+		
 		"./vendor/GLAD/src/glad.c"
 	}
 
 	includedirs {
 		"src",
-		"vendor/SFML-2.6.1/include",
+		"vendor/GLFW/include", -- TODO: problem with some funy /M /MT /Md /MTd
 		"vendor/GLAD/include",
 		"vendor/GLM/include",
-		"vendor/TinyGLTF/include",
 		"vendor/entt/include"
 	}
 
 	-- Libraries
-	defines { 
-		"SFML_STATIC",
-		"TINYGLTF_USE_CPP14"
-	}
-
 	libdirs {
-		"vendor/SFML-2.6.1/lib",
+		"vendor/GLFW/lib-vc2022",
 	}
 
 	links {
-		"opengl32",
-		"winmm",
-		"gdi32",
-		"freetype",
-		"vorbis",
-		"vorbisenc",
-		"vorbisfile",
-		"openal32",
-		"ogg",
-		"flac",
+		"glfw3",
+		"opengl32"
 	}
 
 	-- Organize virtual folders
@@ -69,22 +56,6 @@ project "Runtime"
 		defines { "NDEBUG" }
 		optimize "On"
 
-		links {
-			"sfml-main",
-			"sfml-system-s",
-			"sfml-window-s",
-			"sfml-audio-s",
-			"sfml-network-s",
-		}
-
 	filter "configurations:Debug"
 		defines { "DEBUG" }
 		symbols "On"
-
-		links {
-			"sfml-main-d",
-			"sfml-system-s-d",
-			"sfml-window-s-d",
-			"sfml-audio-s-d",
-			"sfml-network-s-d",
-		}

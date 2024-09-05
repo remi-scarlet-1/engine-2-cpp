@@ -39,7 +39,7 @@ engine::Window::~Window()
 std::chrono::high_resolution_clock::time_point previousPresentTime = std::chrono::high_resolution_clock::now();
 float deltaTime = 0.0f;
 
-void engine::Window::Present()
+void engine::Window::present()
 {
 	glfwSwapBuffers(window);
 

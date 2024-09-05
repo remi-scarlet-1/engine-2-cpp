@@ -10,7 +10,7 @@ namespace engine {
 		Window(const char* title, Vec2i resolution, bool resizable, bool vsync);
 		~Window();
 
-		void Present();
+		void present();
 
 		const bool getIsOpen();
 		const float getDeltaTime();

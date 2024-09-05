@@ -5,14 +5,16 @@
 #include "Math.h"
 
 namespace engine {
-	class Window {
+	class Window { // TODO: support multiple windows?
 	public:
 		Window(const char* title, Vec2i resolution, bool resizable, bool vsync);
 		~Window();
 
 		void present();
+		void pollEvents();
+		void close();
 
-		const bool getIsOpen();
+		const bool getShouldClose();
 		const float getDeltaTime();
 		const GLFWwindow* getWindowHandle();
 

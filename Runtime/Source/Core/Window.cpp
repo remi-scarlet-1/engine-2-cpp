@@ -26,13 +26,19 @@ engine::Window::Window(const char* title, Vec2i resolution, bool resizable, bool
 	glfwMakeContextCurrent(window);
 	if (vsync)
 		glfwSwapInterval(1);
+
+	// Center window
+	const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+	int windowWidth, windowHeight;
+	glfwGetWindowSize(window, &windowWidth, &windowHeight);
+
+	glfwSetWindowPos(window, (mode->width - windowWidth) / 2, (mode->height - windowHeight) / 2);
 }
 
 engine::Window::~Window()
 {
+	glfwMakeContextCurrent(window);
 	glfwDestroyWindow(window);
-	window = nullptr;
-	glfwTerminate();
 }
 
 // For calculating the time between present calls
@@ -50,9 +56,21 @@ void engine::Window::present()
 	deltaTime = deltaTimeDuration.count();
 }
 
-const bool engine::Window::getIsOpen()
+void engine::Window::pollEvents()
 {
-	return glfwWindowShouldClose(window) == GLFW_FALSE;
+	glfwMakeContextCurrent(window);
+	glfwPollEvents();
+}
+
+void engine::Window::close()
+{
+	glfwDestroyWindow(window);
+	glfwTerminate();
+}
+
+const bool engine::Window::getShouldClose()
+{
+	return glfwWindowShouldClose(window) == GLFW_TRUE;
 }
 
 const float engine::Window::getDeltaTime()

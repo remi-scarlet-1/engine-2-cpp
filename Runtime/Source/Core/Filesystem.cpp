@@ -11,6 +11,10 @@
 #error Unsupported platform. Please define PLATFORM_WINDOWS, PLATFORM_LINUX, or PLATFORM_MACOS.
 #endif
 
+#include <fstream>
+#include <sstream>
+#include <stdexcept>
+
 using namespace engine;
 
 bool Filesystem::exists(const Path& path)

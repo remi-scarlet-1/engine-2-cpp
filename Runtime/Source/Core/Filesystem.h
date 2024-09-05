@@ -2,9 +2,6 @@
 
 #include <filesystem>
 #include <string>
-#include <fstream>
-#include <sstream>
-#include <stdexcept>
 
 namespace engine {
 	using Path = std::filesystem::path;

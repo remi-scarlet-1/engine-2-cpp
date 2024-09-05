@@ -15,7 +15,7 @@ project "Runtime"
 
 	includedirs {
 		"./Source",
-		"%{wks.location}/RuntimeDependencies/Include"
+		"%{wks.location}/../RuntimeDependencies/Include"
 	}
 
 	-- Libraries

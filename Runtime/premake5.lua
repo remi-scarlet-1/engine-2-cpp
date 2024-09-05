@@ -32,11 +32,6 @@ project "Runtime"
 		}
 	}
 
-	-- Copy assets into bin (testing)
-	postbuildcommands {
-        "{COPYDIR} %{wks.location}../Resources %{cfg.targetdir}/Resources"
-    }
-
 	-- Configurations
 	filter "configurations:Release"
 		defines { "NDEBUG" }
@@ -47,3 +42,16 @@ project "Runtime"
 		defines { "DEBUG" }
 		optimize "Off"
 		symbols "On"
+
+	-- Platforms
+	filter "system:windows"
+		defines { "PLATFORM_WINDOWS" }
+
+	filter "system:linux"
+		defines { "PLATFORM_LINUX" }
+
+	filter "system:macosx"
+		defines { "PLATFORM_MACOS" }
+
+	-- Reset filters to apply to all platforms
+	filter {}

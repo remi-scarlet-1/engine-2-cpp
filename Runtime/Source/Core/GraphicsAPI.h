@@ -3,24 +3,24 @@
 #include "Math.h"
 
 namespace engine {
-	struct VertexBuffer
-	{
-		unsigned int id;
-	};
-
-	struct IndexBuffer
-	{
-		unsigned int id;
-		int indexCount;
-	};
-
-	struct Shader 
-	{
-		unsigned int id;
-	};
-
 	class GraphicsAPI {
 	public:
+		struct VertexBuffer
+		{
+			unsigned int id;
+		};
+
+		struct IndexBuffer
+		{
+			unsigned int id;
+			int indexCount;
+		};
+
+		struct Shader 
+		{
+			unsigned int id;
+		};
+
 		// Initialization
 		static void initialize();
 		static void shutdown();

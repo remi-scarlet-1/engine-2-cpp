@@ -14,11 +14,6 @@ namespace engine {
 		int indexCount;
 	};
 
-	struct FrameBuffer
-	{
-		unsigned int id;
-	};
-
 	struct Shader 
 	{
 		unsigned int id;
@@ -31,12 +26,12 @@ namespace engine {
 		static void shutdown();
 
 		// Render targets
-		static void bindWindow(void* window);
-		static void bindFrameBuffer(FrameBuffer& buffer);
-
 		static void setViewport(Vec2i resolution);
 		static void clear(Vec4 color);
 		static void present();
+
+		// TODO: Pipeline state (like: depth/stencil states, blend modes, rasterizer settings)
+		// TODO: Texture management
 
 		// Buffer management
 		static void createVertexBuffer(VertexBuffer& buffer);
@@ -47,14 +42,13 @@ namespace engine {
 		static void bindIndexBuffer(const IndexBuffer& buffer);
 		static void deleteIndexBuffer(IndexBuffer& buffer);
 
-		static void createFrameBuffer(FrameBuffer& buffer);
-		static void bindFrameBuffer(const FrameBuffer& buffer);
-		static void deleteFrameBuffer(FrameBuffer& buffer);
-
 		// Shader management
 		static void createShader(Shader& shader);
 		static void bindShader(const Shader& shader);
 		static void deleteShader(Shader& shader);
+
+		// TODO: Cover other shader types then fragment & vertex?
+		// TODO: Uniform management
 
 		// Draw calls
 		static void drawIndexed(const IndexBuffer& indexBuffer);

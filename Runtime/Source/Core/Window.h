@@ -5,7 +5,7 @@
 #include "Math.h"
 
 namespace engine {
-	class Window { // TODO: support multiple windows?
+	class Window { // TODO: Support for multiple windows?
 	public:
 		Window(const char* title, Vec2i resolution, bool resizable, bool vsync);
 		~Window();

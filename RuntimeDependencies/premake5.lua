@@ -9,6 +9,7 @@ project "RuntimeDependencies"
 
 	-- Source
 	files {
+		"./premake5.lua",
 		"./Include/**.h",
 		"./Include/**.hpp",
 		"./Source/**.c",
@@ -20,6 +21,7 @@ project "RuntimeDependencies"
 	}
 
 	vpaths {
+		[""] = { "./premake5.lua" },
 		["Include/*"] = { 
 			"./Include/**.h",
 			"./Include/**.hpp",

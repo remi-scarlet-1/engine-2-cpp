@@ -1,11 +1,11 @@
 #include "Filesystem.h"
 
-#if PLATFORM_WINDOWS
+#if RT_PLATFORM_WINDOWS
 #include <windows.h>
-#elif PLATFORM_LINUX
+#elif RT_PLATFORM_LINUX
 #include <unistd.h>
 #include <limits.h>
-#elif PLATFORM_MACOS
+#elif RT_PLATFORM_MACOS
 #include <mach-o/dyld.h>
 #else
 #error Unsupported platform. Please define PLATFORM_WINDOWS, PLATFORM_LINUX, or PLATFORM_MACOS.
@@ -24,13 +24,13 @@ bool Filesystem::exists(const Path& path)
 
 Path Filesystem::getExecutablePath()
 {
-#if PLATFORM_WINDOWS
+#if RT_PLATFORM_WINDOWS
     char path[MAX_PATH];
     if (GetModuleFileNameA(nullptr, path, MAX_PATH) == 0)
         throw std::runtime_error("Failed to get executable path");
     return Path(path);
 
-#elif PLATFORM_LINUX
+#elif RT_PLATFORM_LINUX
     char path[PATH_MAX];
     ssize_t len = readlink("/proc/self/exe", path, sizeof(path) - 1);
     if (len == -1)
@@ -38,7 +38,7 @@ Path Filesystem::getExecutablePath()
     path[len] = '\0';
     return Path(path);
 
-#elif PLATFORM_MACOS
+#elif RT_PLATFORM_MACOS
     char path[1024];
     uint32_t size = sizeof(path);
     if (_NSGetExecutablePath(path, &size) != 0)

@@ -9,6 +9,7 @@ project "Runtime"
 
 	-- Source
 	files { 
+		"./premake5.lua",
 		"./Source/**.h",
 		"./Source/**.cpp"
 	}
@@ -18,12 +19,18 @@ project "Runtime"
 		"%{wks.location}/../RuntimeDependencies/Include"
 	}
 
+	defines {
+		-- IMPORTANT! only choose one graphics backend (currently there is only OpenGL)
+		"RT_BACKEND_GL",
+	}
+
 	-- Libraries
 	libdirs { "%{wks.location}/Bin/%{cfg.buildcfg}" }
 	links { "RuntimeDependencies" }
 
 	-- Organize virtual folders
 	vpaths {
+		[""] = { "./premake5.lua" },
 		["Source/*"] = { 
 			"./Source/**.c", 
 			"./Source/**.cpp", 
@@ -34,24 +41,24 @@ project "Runtime"
 
 	-- Configurations
 	filter "configurations:Release"
-		defines { "NDEBUG" }
+		defines { "RT_NDEBUG" }
 		optimize "On"
 		symbols "Off"
 
 	filter "configurations:Debug"
-		defines { "DEBUG" }
+		defines { "RT_DEBUG" }
 		optimize "Off"
 		symbols "On"
 
 	-- Platforms
 	filter "system:windows"
-		defines { "PLATFORM_WINDOWS" }
+		defines { "RT_PLATFORM_WINDOWS" }
 
 	filter "system:linux"
-		defines { "PLATFORM_LINUX" }
+		defines { "RT_PLATFORM_LINUX" }
 
 	filter "system:macosx"
-		defines { "PLATFORM_MACOS" }
+		defines { "RT_PLATFORM_MACOS" }
 
 	-- Reset filters to apply to all platforms
 	filter {}
